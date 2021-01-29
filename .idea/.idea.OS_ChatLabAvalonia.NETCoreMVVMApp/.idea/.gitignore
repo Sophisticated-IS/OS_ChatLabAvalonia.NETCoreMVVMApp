@@ -1,0 +1,13 @@
+﻿# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/contentModel.xml
+/modules.xml
+/.idea.OS_ChatLabAvalonia.NETCoreMVVMApp.iml
+/projectSettingsUpdater.xml
+# Datasource local storage ignored files
+/../../../../../../../../:\Users\Sova IS\RiderProjects\OS_ChatLabAvalonia.NETCoreMVVMApp\.idea\.idea.OS_ChatLabAvalonia.NETCoreMVVMApp\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/

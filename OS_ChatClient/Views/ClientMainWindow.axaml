@@ -1,0 +1,104 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="800"
+        d:DesignHeight="450"
+        x:Class="OS_ChatLabAvalonia.NETCoreMVVMApp.Views.MainWindow"
+        WindowStartupLocation="CenterScreen"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Кросс - платформенный чат Сова И.С. КМБ"
+        Foreground="{StaticResource SystemBaseHighColor}"
+        IsEnabled="{Binding IsWindowEnabled,Mode=OneWay}">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid ColumnDefinitions="*,Auto,Auto">
+
+        <TextBox Grid.ColumnSpan="3"
+                 IsEnabled="False"
+                 IsReadOnly="True"
+                 VerticalAlignment="Center"
+                 HorizontalAlignment="Center"
+                 Foreground="#F4A460"
+                 IsVisible="{Binding !IsWindowEnabled}"
+                 ZIndex="15">
+            Waiting for Server connection...
+        </TextBox>
+
+        <Grid Grid.Column="0"
+              RowDefinitions="*,Auto,Auto">
+
+            <Grid Grid.Row="0">
+                <ListBox>
+                    <ListBoxItem Content="Message1" />
+                    <ListBoxItem Content="Message2" />
+                    <ListBoxItem Content="Message3" />
+                </ListBox>
+            </Grid>
+
+            <Border Grid.Row="1"
+                    Margin="5"
+                    Background="{StaticResource SystemControlForegroundChromeGrayBrush}"
+                    CornerRadius="10">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+
+                    <Button Grid.Column="0"
+                            Command="{Binding DoTheThing,Mode=OneWay}">
+                        <Image Source="../Assets/Images/add.ico"
+                               MaxHeight="50" />
+                    </Button>
+                    <TextBox Grid.Column="1"
+                             Watermark="Сообщение"
+                             TextWrapping="Wrap"
+                             MaxLength="5000"
+                             MaxHeight="200" />
+                    <Button Grid.Column="2">
+                        <Image Source="../Assets/Images/send.ico"
+                               MaxHeight="50" />
+                    </Button>
+
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2">
+                <Border Background="#708090" Padding="3,0,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Connection Status:"
+                               Padding="0" />
+                        <TextBlock Text="{Binding ConnectionStatus,Mode=OneWay}"
+                                   Foreground="{Binding ConnectionStatusColor,Mode=OneWay}"
+                                   VerticalAlignment="Bottom"
+                                   FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <Separator Width="10"
+                       Background="#B5B8B1" />
+        </Grid>
+
+        <Grid Grid.Column="2"
+              RowDefinitions="Auto,*">
+
+            <Label Grid.Row="0"
+                   FontWeight="Bold"
+                   FontSize="16"
+                   Content="Список пользователей"
+                   Background="#151414" />
+
+            <ListBox Grid.Row="1"
+                     FontSize="14">
+                <ListBoxItem Content="Linux" />
+                <ListBoxItem Content="Mac" />
+                <ListBoxItem Content="Windows" />
+            </ListBox>
+        </Grid>
+    </Grid>
+</Window>

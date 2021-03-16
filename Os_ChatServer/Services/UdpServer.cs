@@ -6,43 +6,51 @@ using Utils;
 
 namespace Os_ChatServer.Services
 {
-    public class UdpListener
+    public sealed class UdpServer
     {
-        public const int ServerPort = 8081;
-        public const string ServerIP= "127.0.0.1";
-        public UdpListener()
+        public const int UdpServerPort = 8081;
+
+        private UdpClient _serverUdp;
+
+        public UdpServer()
         {
         }
 
         public void Run(object? state)
         {
-            var serverUdp = new UdpClient(ServerPort);
+            _serverUdp = new UdpClient(UdpServerPort);
 
             while (true)
             {
-                
-                while (serverUdp.Available > 0)
+
+                do
                 {
                     var senderEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                    var data = serverUdp.Receive(ref senderEndPoint);
-                    
-                    
+                    var data = _serverUdp.Receive(ref senderEndPoint);
+
+
                     var decompressedData = ByteCompressor.DeCompress(data);
                     var deserializedMessage = Serializer.DeSerialize(decompressedData);
 
                     switch (deserializedMessage)
                     {
-                        case WhoIsServerMessage :
-                            var answer = new ServerAddressMessage{ServerIP = ServerIP};
+                        case WhoIsServerMessage:
+                            //todo неявная ссылка на константы
+                            var answer = new ServerAddressMessage {ServerIP = TcpServer.TcpServerIP,ServerPort = TcpServer.TcpServerPort };
                             var serializedMessage = Serializer.Serialize(answer);
                             var compressedMessage = ByteCompressor.Compress(serializedMessage);
-                            serverUdp.Send(compressedMessage,compressedMessage.Length,senderEndPoint);
+                            _serverUdp.Send(compressedMessage, compressedMessage.Length, senderEndPoint);
                             break;
                     }
-                }
-                
+                    
+                } while (_serverUdp.Available > 0);
+
             }
         }
         
+        ~UdpServer()
+        {
+            _serverUdp?.Close();
+        }
     }
 }

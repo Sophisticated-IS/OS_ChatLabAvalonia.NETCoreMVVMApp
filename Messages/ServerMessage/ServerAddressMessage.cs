@@ -7,5 +7,8 @@ namespace Messages.ServerMessage
     {
         [ProtoMember(1)]
         public string ServerIP { get; set; }
+        [ProtoMember(2)]
+        public int ServerPort { get; set; }
+
     }
 }

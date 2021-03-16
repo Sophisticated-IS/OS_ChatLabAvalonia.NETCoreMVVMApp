@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using ReactiveUI;
 
 namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    public class ViewModelBase : ReactiveObject
     {
-        public string Greeting => "Welcome to Avalonia!";
     }
 }

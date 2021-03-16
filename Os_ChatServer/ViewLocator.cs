@@ -1,9 +1,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels;
+using Os_ChatServer.ViewModels;
 
-namespace OS_ChatLabAvalonia.NETCoreMVVMApp
+namespace Os_ChatServer
 {
     public class ViewLocator : IDataTemplate
     {
@@ -16,11 +16,11 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp
 
             if (type != null)
             {
-                return (Control)Activator.CreateInstance(type)!;
+                return (Control) Activator.CreateInstance(type)!;
             }
             else
             {
-                return new TextBlock { Text = "Not Found: " + name };
+                return new TextBlock {Text = "Not Found: " + name};
             }
         }
 

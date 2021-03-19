@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Media;
+using Messages.ClientMessage.AuthorizedUserMessages;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Services;
 using ReactiveUI;
 
@@ -21,7 +23,8 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         private ISolidColorBrush _connectionStatusColor;
         private bool _isWindowEnabled;
 
-
+        public ReactiveCommand<Unit,Unit> SendMessageCommand { get; set; }
+        public ReactiveCommand<Unit,Unit> SendFileCommand { get; set; }
         public StatusConnection ConnectionStatus
         {
             get => _connectionStatus;
@@ -45,7 +48,14 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             ConnectionStatus = StatusConnection.Disconnected;
             ConnectionStatusColor = Brushes.Red;
             _udpClientSender = new UdpClientSender();
+            SendFileCommand = ReactiveCommand.Create(SendMessage);
             ConnectToServer();
+        }
+
+        private void SendMessage()
+        {
+            var mess = new SendTextMessage() {TextMessage = "FFFFFFFFFFFFF"};
+            _tcpClientSender.SendMessage(mess);
         }
 
         private async void ConnectToServer()

@@ -13,9 +13,9 @@
         Foreground="{StaticResource SystemBaseHighColor}"
         IsEnabled="{Binding IsWindowEnabled,Mode=OneWay}">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
+    <!-- <Design.DataContext> -->
+    <!--     <vm:MainWindowViewModel /> -->
+    <!-- </Design.DataContext> -->
 
     <Grid ColumnDefinitions="*,Auto,Auto">
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Services;
@@ -16,8 +15,8 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             Connected
         }
 
-        private UdpClientSender _udpClientSender;
-        private TcpClientSender _tcpClientSender;
+        private readonly UdpClientSender _udpClientSender;
+        private  TcpClientSender _tcpClientSender;
         private StatusConnection _connectionStatus;
         private ISolidColorBrush _connectionStatusColor;
         private bool _isWindowEnabled;
@@ -47,7 +46,6 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             ConnectionStatusColor = Brushes.Red;
             _udpClientSender = new UdpClientSender();
             ConnectToServer();
-            // _tcpClientSender.Run();
         }
 
         private async void ConnectToServer()

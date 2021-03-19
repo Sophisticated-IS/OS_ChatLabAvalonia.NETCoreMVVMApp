@@ -2,8 +2,8 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Messages.ClientMessage;
-using Messages.ServerMessage;
+using Messages.ClientMessage.NotAuthorizedUserMessages;
+using Messages.ServerMessage.ServerAddressMessage;
 using Utils;
 
 namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
@@ -27,23 +27,21 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                 _udpClient = new UdpClient(ClientPort);
           
                 var whoIsServerMessage = new WhoIsServerMessage();
-                var serializedMessage = Serializer.Serialize(whoIsServerMessage);
-                var compressedMessage = ByteCompressor.Compress(serializedMessage); 
+                var sendingMessage = MessageConverter.PackMessage(whoIsServerMessage); 
             
                 while (true)
                 {
-                    await _udpClient.SendAsync(compressedMessage, compressedMessage.Length, "255.255.255.255", ServerPort);
+                    await _udpClient.SendAsync(sendingMessage, sendingMessage.Length, "255.255.255.255", ServerPort);
                     await Task.Delay(TimeSpan.FromSeconds(1));
                     if (_udpClient.Available > 0)
                     {
                         var serverEndPoint = new IPEndPoint(IPAddress.Any,0);
                         var answer = _udpClient.Receive(ref serverEndPoint);
-                        var decompressedData = ByteCompressor.DeCompress(answer);
-                        var deserializedMessage = Serializer.DeSerialize(decompressedData);
-
-                        switch (deserializedMessage)
+                        
+                        var receivedMessage = MessageConverter.UnPackMessage(answer);
+                        switch (receivedMessage)
                         {
-                            case ServerAddressMessage serverAddressMessage:
+                            case TextServerAddressMessage serverAddressMessage:
                                 return new IPEndPoint(IPAddress.Parse(serverAddressMessage.ServerIP),serverAddressMessage.ServerPort);
                         }
                     }

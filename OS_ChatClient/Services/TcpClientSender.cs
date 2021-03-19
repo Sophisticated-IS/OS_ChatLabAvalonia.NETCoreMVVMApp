@@ -1,8 +1,8 @@
-﻿
-
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using Messages.Base;
+using Utils;
 
 namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
 {
@@ -29,18 +29,18 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                _tcpSocket.Bind(ipEndPoint);
                
                _tcpSocket.Connect(serverIpEndPoint);
-               
                return true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }
         }
         
-        public void Run()
+        public async void SendMessage(Message message)
         {
-            
+            var sendingMessage = MessageConverter.PackMessage(message);
+            await _tcpSocket.SendAsync(sendingMessage, SocketFlags.None);
         }
 
         ~TcpClientSender()

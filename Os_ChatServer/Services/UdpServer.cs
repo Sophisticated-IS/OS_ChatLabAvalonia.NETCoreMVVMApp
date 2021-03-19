@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using Messages.ClientMessage;
-using Messages.ServerMessage;
+using Messages.ClientMessage.NotAuthorizedUserMessages;
+using Messages.ServerMessage.ServerAddressMessage;
 using Utils;
 
 namespace Os_ChatServer.Services
@@ -29,17 +29,20 @@ namespace Os_ChatServer.Services
                     var data = _serverUdp.Receive(ref senderEndPoint);
 
 
-                    var decompressedData = ByteCompressor.DeCompress(data);
-                    var deserializedMessage = Serializer.DeSerialize(decompressedData);
-
-                    switch (deserializedMessage)
+                    
+                    var receivedMessage = MessageConverter.UnPackMessage(data);
+                    switch (receivedMessage)
                     {
                         case WhoIsServerMessage:
                             //todo неявная ссылка на константы
-                            var answer = new ServerAddressMessage {ServerIP = TcpServer.TcpServerIP,ServerPort = TcpServer.TcpServerPort };
-                            var serializedMessage = Serializer.Serialize(answer);
-                            var compressedMessage = ByteCompressor.Compress(serializedMessage);
-                            _serverUdp.Send(compressedMessage, compressedMessage.Length, senderEndPoint);
+                            var answer = new TextServerAddressMessage
+                            {
+                                ServerIP = TcpServer.TcpServerIP,
+                                ServerPort = TcpServer.TcpServerPort
+                            };
+                            
+                            var sendingMessage = MessageConverter.PackMessage(answer);
+                            _serverUdp.Send(sendingMessage, sendingMessage.Length, senderEndPoint);
                             break;
                     }
                     

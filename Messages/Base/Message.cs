@@ -7,10 +7,6 @@ namespace Messages.Base
     [ProtoInclude(2, typeof(ServerMessage.Base.ServerMessage))]
     public abstract class Message
     {
-        /// <summary>
-        /// Уникальный идентификатор пользователя
-        /// </summary>
-        public string UserName { get; set; }
         
     }
 }

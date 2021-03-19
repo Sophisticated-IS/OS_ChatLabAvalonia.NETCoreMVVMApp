@@ -16,7 +16,7 @@ namespace Os_ChatServer.ViewModels
         private UdpServer _udpServer;
         private TcpServer _tcpServer;
 
-        public ConcurrentDictionary<string,ChatClient> ChatClients { get; set; }
+        public ConcurrentDictionary<string,Socket> ChatClients { get;}
         
         
         public MainWindowViewModel()
@@ -24,7 +24,7 @@ namespace Os_ChatServer.ViewModels
             try
             {
                 _udpServer = new UdpServer();
-                ChatClients = new ConcurrentDictionary<string, ChatClient>();
+                ChatClients = new ConcurrentDictionary<string, Socket>();
                 _tcpServer = new TcpServer(ChatClients);
                 ThreadPool.QueueUserWorkItem(_udpServer.Run);
                 ThreadPool.QueueUserWorkItem(_tcpServer.Run);//WaitCallBack???

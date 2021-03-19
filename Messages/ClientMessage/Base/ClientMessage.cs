@@ -1,4 +1,5 @@
 ﻿using Messages.Base;
+using Messages.ClientMessage.NotAuthorizedUserMessages;
 using ProtoBuf;
 
 namespace Messages.ClientMessage.Base

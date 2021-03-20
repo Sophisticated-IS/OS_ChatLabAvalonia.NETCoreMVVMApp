@@ -48,7 +48,7 @@
                 <Grid ColumnDefinitions="Auto,*,Auto">
 
                     <Button Grid.Column="0"
-                            Command="{Binding DoTheThing,Mode=OneWay}">
+                            Command="{Binding Mode=OneWay}">
                         <Image Source="../Assets/Images/add.ico"
                                MaxHeight="50" />
                     </Button>
@@ -57,7 +57,8 @@
                              TextWrapping="Wrap"
                              MaxLength="5000"
                              MaxHeight="200" />
-                    <Button Grid.Column="2">
+                    <Button Grid.Column="2"
+                            Command="{Binding SendMessageCommand,Mode=OneWay}">
                         <Image Source="../Assets/Images/send.ico"
                                MaxHeight="50" />
                     </Button>

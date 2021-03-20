@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Messages.ClientMessage.AuthorizedUserMessages;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Services;
+using OS_ChatLabAvalonia.NETCoreMVVMApp.Views;
 using ReactiveUI;
 
 namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
@@ -22,6 +26,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         private StatusConnection _connectionStatus;
         private ISolidColorBrush _connectionStatusColor;
         private bool _isWindowEnabled;
+        private string _userName;
 
         public ReactiveCommand<Unit,Unit> SendMessageCommand { get; set; }
         public ReactiveCommand<Unit,Unit> SendFileCommand { get; set; }
@@ -48,16 +53,18 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             ConnectionStatus = StatusConnection.Disconnected;
             ConnectionStatusColor = Brushes.Red;
             _udpClientSender = new UdpClientSender();
-            SendFileCommand = ReactiveCommand.Create(SendMessage);
+            SendMessageCommand = ReactiveCommand.Create(SendMessage);
             ConnectToServer();
         }
 
         private void SendMessage()
         {
-            var mess = new SendTextMessage() {TextMessage = "FFFFFFFFFFFFF"};
+            var mess = new SendTextMessage {TextMessage = "FFFFFFFFFFFFF"};
             _tcpClientSender.SendMessage(mess);
         }
 
+        
+        
         private async void ConnectToServer()
         {
             var resultIpEndPoint = await _udpClientSender.FindServer();
@@ -69,7 +76,19 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
                 _tcpClientSender = new TcpClientSender(resultIpEndPoint);
                 ConnectionStatus = StatusConnection.Connected;
                 ConnectionStatusColor = Brushes.Lime;
+
+                var registerDialog = new UserNameDialog();
+                registerDialog.SetDataContextWithArgs(_tcpClientSender);
+                
+                if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                {
+                    await registerDialog.ShowDialog(desktop.MainWindow);
+                }
+
+                var dataContext = (UserNameDialogVM)registerDialog.DataContext;
+                _userName = dataContext.UserName;
                 IsWindowEnabled = true;
+                
             }
         }
     }

@@ -12,6 +12,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
+        
         }
 
         private void InitializeComponent()

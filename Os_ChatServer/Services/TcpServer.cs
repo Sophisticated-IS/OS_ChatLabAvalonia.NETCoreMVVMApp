@@ -66,20 +66,30 @@ namespace Os_ChatServer.Services
 
             var socket = (Socket) tcpSocket;
 
-            while (true)
+            var clientConnected = true;
+            while (clientConnected)
             {
                 var fullMessage = new List<byte>(1024);
                 do
                 {
                     var data = new byte[1024];
-                    var bytesAmount = await ReceiveAsync(socket, data, 0, data.Length, SocketFlags.None)
-                        .ConfigureAwait(false);
-                    var readBytes =
-                        data.Take(bytesAmount); //TODO OPtimize through if the buffer.length equals to bytesAmount
-                    fullMessage.AddRange(readBytes);
+                    try
+                    {
+                        var bytesAmount = await ReceiveAsync(socket, data, 0, data.Length, SocketFlags.None)
+                            .ConfigureAwait(false);
+                        var readBytes =
+                            data.Take(bytesAmount); //TODO OPtimize through if the buffer.length equals to bytesAmount
+                        fullMessage.AddRange(readBytes);
+                    }
+                    catch (SocketException socketException)
+                    {
+                        clientConnected = false;
+                    }
+                  
                 } while (socket.Available > 0);
 
-
+                if (!clientConnected) return;
+                
                 var receivedMessage = MessageConverter.UnPackMessage(fullMessage.ToArray());
                 switch (receivedMessage)
                 {

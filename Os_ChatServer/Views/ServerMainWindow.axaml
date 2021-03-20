@@ -8,9 +8,10 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="Os_ChatServer">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+    <!-- ГРЕБАНЫЙ ДИЗАЙНЕР ИСПОЛНЯЕТ КОД В КОНТСРУКТТОРЕ!!!!!!!!!!!! -->
+    <!-- <Design.DataContext> -->
+    <!--     <vm:MainWindowViewModel/> -->
+    <!-- </Design.DataContext> -->
     <Button Content="Start listening Port" Command="{Binding DoTheThing}"/>
 
 

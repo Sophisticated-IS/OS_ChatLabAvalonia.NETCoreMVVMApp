@@ -42,6 +42,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                         switch (receivedMessage)
                         {
                             case TextServerAddressMessage serverAddressMessage:
+                                _udpClient.Dispose();
                                 return new IPEndPoint(IPAddress.Parse(serverAddressMessage.ServerIP),serverAddressMessage.ServerPort);
                         }
                     }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Messages.Base;
 using Messages.ClientMessage.NotAuthorizedUserMessages;
@@ -12,13 +14,30 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
 {
     public sealed class TcpClientSender
     {
-        public const string TcpClientIP = "127.0.0.99";
-        public const int TcpClientPort = 8084;
+        public string TcpClientIP;
+        public int TcpClientPort;
 
         private Socket _tcpSocket;
 
+        private static List<string> TcpIPs = new List<string>(){"127.0.0.98","127.0.0.99"}; 
+        private static List<int> TcpPorts = new List<int>(){8084,8094};
+
         public TcpClientSender(IPEndPoint serverIpEndPoint)
         {
+
+            var Mutex = new Mutex(true, "EB617FE4-1610-4FE9-82B7-853EC0D77F24");
+
+            if (Mutex.WaitOne(TimeSpan.Zero))
+            {
+                TcpClientIP = TcpIPs.First();
+                TcpClientPort = TcpPorts.First();
+            }
+            else
+            {
+                TcpClientIP = TcpIPs.Last();
+                TcpClientPort = TcpPorts.Last();
+            }
+            
             SetConnection(serverIpEndPoint);
         }
 

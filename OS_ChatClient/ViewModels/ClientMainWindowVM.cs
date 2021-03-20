@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Net;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia;
@@ -6,6 +8,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Messages.ClientMessage.AuthorizedUserMessages;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OS_ChatLabAvalonia.NETCoreMVVMApp.Models;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Services;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Views;
 using ReactiveUI;
@@ -28,7 +31,9 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         private bool _isWindowEnabled;
         private string _userName;
 
-        public ReactiveCommand<Unit,Unit> SendMessageCommand { get; set; }
+        public ObservableCollection<ChatMessage> ChatMessages { get;}
+        public string ChatMessageText { get; set; }
+        public ReactiveCommand<Unit,Unit> SendMessageCommand { get;  }
         public ReactiveCommand<Unit,Unit> SendFileCommand { get; set; }
         public StatusConnection ConnectionStatus
         {
@@ -55,12 +60,14 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             _udpClientSender = new UdpClientSender();
             SendMessageCommand = ReactiveCommand.Create(SendMessage);
             ConnectToServer();
+            ChatMessages = new ObservableCollection<ChatMessage>();
         }
 
         private void SendMessage()
         {
-            var mess = new SendTextMessage {TextMessage = "FFFFFFFFFFFFF"};
+            var mess = new SendTextMessage {TextMessage = ChatMessageText};
             _tcpClientSender.SendMessage(mess);
+            ChatMessages.Add(new ChatMessage(_userName,ChatMessageText,DateTime.Now));
         }
 
         

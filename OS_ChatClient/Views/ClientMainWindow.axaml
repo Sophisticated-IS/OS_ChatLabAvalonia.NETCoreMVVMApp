@@ -34,10 +34,19 @@
               RowDefinitions="*,Auto,Auto">
 
             <Grid Grid.Row="0">
-                <ListBox>
-                    <ListBoxItem Content="Message1" />
-                    <ListBoxItem Content="Message2" />
-                    <ListBoxItem Content="Message3" />
+                <ListBox Items="{Binding ChatMessages,Mode=OneWay}">
+                   <ListBox.ItemTemplate>
+                       <DataTemplate>
+                           <StackPanel Orientation="Vertical">
+                               <StackPanel Orientation="Horizontal">
+                                   <Label Foreground="Blue" Content="{Binding UserName}"/>
+                                   <Label Foreground="Gray" Content="{Binding Date}"/>
+                               </StackPanel>
+                               
+                               <TextBlock Margin="5,3,0,0" Text="{Binding Message}"/>
+                           </StackPanel>
+                       </DataTemplate>
+                   </ListBox.ItemTemplate>
                 </ListBox>
             </Grid>
 
@@ -55,6 +64,7 @@
                     <TextBox Grid.Column="1"
                              Watermark="Сообщение"
                              TextWrapping="Wrap"
+                             Text="{Binding ChatMessageText,Mode=OneWayToSource}"
                              MaxLength="5000"
                              MaxHeight="200" />
                     <Button Grid.Column="2"

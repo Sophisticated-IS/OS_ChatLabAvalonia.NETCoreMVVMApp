@@ -19,6 +19,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
     public sealed class TcpClientSender
     {
         private readonly ObservableCollection<ChatMessage> _chatMessages;
+        private readonly ObservableCollection<string> _usersInChat;
         public string TcpClientIP;
         public int TcpClientPort;
 
@@ -27,9 +28,11 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
         private static List<string> TcpIPs = new List<string>(){"127.0.0.98","127.0.0.99"}; 
         private static List<int> TcpPorts = new List<int>(){8084,8094};
 
-        public TcpClientSender(IPEndPoint serverIpEndPoint, [NotNull] ObservableCollection<ChatMessage> chatMessages)
+        public TcpClientSender(IPEndPoint serverIpEndPoint, [NotNull] ObservableCollection<ChatMessage> chatMessages,
+            [NotNull] ObservableCollection<string> usersInChat)
         {
             _chatMessages = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
+            _usersInChat = usersInChat ?? throw new ArgumentNullException(nameof(usersInChat));
 
             var Mutex = new Mutex(true, "EB617FE4-1610-4FE9-82B7-853EC0D77F24");
 
@@ -69,6 +72,10 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                         {
                             _chatMessages.Add(new ChatMessage(sendTextMessage.UserName, sendTextMessage.TextMessage,
                                 DateTime.Now));
+                            if (!_usersInChat.Contains(sendTextMessage.UserName))
+                            {
+                                _usersInChat.Add(sendTextMessage.UserName);
+                            }
                         }
                         break;
                 }

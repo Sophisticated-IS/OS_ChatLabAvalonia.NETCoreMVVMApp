@@ -82,7 +82,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
 
             if (resultIpEndPoint != null)
             {
-                _tcpClientSender = new TcpClientSender(resultIpEndPoint,ChatMessages);
+                _tcpClientSender = new TcpClientSender(resultIpEndPoint,ChatMessages,UsersInChat);
                 ConnectionStatus = StatusConnection.Connected;
                 ConnectionStatusColor = Brushes.Lime;
 

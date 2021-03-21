@@ -66,9 +66,13 @@
                              TextWrapping="Wrap"
                              Text="{Binding ChatMessageText,Mode=OneWayToSource}"
                              MaxLength="5000"
-                             MaxHeight="200" />
-                    <Button Grid.Column="2"
-                            Command="{Binding SendMessageCommand,Mode=OneWay}">
+                             MaxHeight="200">
+                        <TextBox.KeyBindings>
+                            <KeyBinding Gesture="Enter" Command="{Binding SendMessageCommand,Mode=OneWay}"></KeyBinding>
+                        </TextBox.KeyBindings>
+                        </TextBox>
+                        <Button Grid.Column="2"
+                                Command="{Binding SendMessageCommand,Mode=OneWay}">
                         <Image Source="../Assets/Images/send.ico"
                                MaxHeight="50" />
                     </Button>

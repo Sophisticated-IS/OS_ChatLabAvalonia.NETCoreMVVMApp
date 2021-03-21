@@ -32,6 +32,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         private string _userName;
 
         public ObservableCollection<ChatMessage> ChatMessages { get;}
+        public ObservableCollection<string> UsersInChat { get;}
         public string ChatMessageText { get; set; }
         public ReactiveCommand<Unit,Unit> SendMessageCommand { get;  }
         public ReactiveCommand<Unit,Unit> SendFileCommand { get; set; }
@@ -61,6 +62,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             SendMessageCommand = ReactiveCommand.Create(SendMessage);
             ConnectToServer();
             ChatMessages = new ObservableCollection<ChatMessage>();
+            UsersInChat = new ObservableCollection<string>();
         }
 
         private void SendMessage()
@@ -94,6 +96,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
 
                 var dataContext = (UserNameDialogVM)registerDialog.DataContext;
                 _userName = dataContext.UserName;
+                UsersInChat.Add(_userName + "(YOU)");
                 IsWindowEnabled = true;
                 
             }

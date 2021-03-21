@@ -67,7 +67,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
 
         private void SendMessage()
         {
-            var mess = new SendTextMessage {TextMessage = ChatMessageText};
+            var mess = new SendTextMessage {TextMessage = ChatMessageText,UserName = _userName};
             _tcpClientSender.SendMessage(mess);
             ChatMessages.Add(new ChatMessage(_userName,ChatMessageText,DateTime.Now));
         }
@@ -82,7 +82,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
 
             if (resultIpEndPoint != null)
             {
-                _tcpClientSender = new TcpClientSender(resultIpEndPoint);
+                _tcpClientSender = new TcpClientSender(resultIpEndPoint,ChatMessages);
                 ConnectionStatus = StatusConnection.Connected;
                 ConnectionStatusColor = Brushes.Lime;
 
@@ -98,6 +98,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
                 _userName = dataContext.UserName;
                 UsersInChat.Add(_userName + "(YOU)");
                 IsWindowEnabled = true;
+                _tcpClientSender.Run();
                 
             }
         }

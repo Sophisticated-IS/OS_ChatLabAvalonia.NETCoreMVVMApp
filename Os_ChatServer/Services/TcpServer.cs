@@ -85,11 +85,10 @@ namespace Os_ChatServer.Services
                     {
                         clientConnected = false;
                     }
-                  
                 } while (socket.Available > 0);
 
                 if (!clientConnected) return;
-                
+
                 var receivedMessage = MessageConverter.UnPackMessage(fullMessage.ToArray());
                 switch (receivedMessage)
                 {
@@ -120,13 +119,13 @@ namespace Os_ChatServer.Services
                             if (socket.RemoteEndPoint != client.RemoteEndPoint)
                             {
                                 var sendingMessage = MessageConverter.PackMessage(sendTextMessage);
-                                await socket.SendToAsync(sendingMessage, SocketFlags.None, client.RemoteEndPoint).ConfigureAwait(false);
+                                await client.SendAsync(sendingMessage, SocketFlags.None).ConfigureAwait(false);
                             }
                         }
 
                         break;
 
-                    case GetFilesServerAddressMessage :
+                    case GetFilesServerAddressMessage:
                     {
                         var filesServerAddressMessage = new FilesServerAddressMessage
                         {

@@ -1,19 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Messages.Base;
+using Messages.ClientMessage.AuthorizedUserMessages;
 using Messages.ClientMessage.NotAuthorizedUserMessages;
 using Messages.ServerMessage;
+using OS_ChatLabAvalonia.NETCoreMVVMApp.Models;
 using Utils;
 
 namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
 {
     public sealed class TcpClientSender
     {
+        private readonly ObservableCollection<ChatMessage> _chatMessages;
         public string TcpClientIP;
         public int TcpClientPort;
 
@@ -22,8 +27,9 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
         private static List<string> TcpIPs = new List<string>(){"127.0.0.98","127.0.0.99"}; 
         private static List<int> TcpPorts = new List<int>(){8084,8094};
 
-        public TcpClientSender(IPEndPoint serverIpEndPoint)
+        public TcpClientSender(IPEndPoint serverIpEndPoint, [NotNull] ObservableCollection<ChatMessage> chatMessages)
         {
+            _chatMessages = chatMessages ?? throw new ArgumentNullException(nameof(chatMessages));
 
             var Mutex = new Mutex(true, "EB617FE4-1610-4FE9-82B7-853EC0D77F24");
 
@@ -39,6 +45,35 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
             }
             
             SetConnection(serverIpEndPoint);
+        }
+
+        public async void Run()
+        {
+            while (true)
+            {
+                var fullMessage = new List<byte>(1024);
+                do
+                {
+                    var buffer = new byte[1024];
+                    var bytesAmount =await _tcpSocket.ReceiveAsync(buffer, SocketFlags.None);
+                    var realGotBytes = buffer.Take(bytesAmount);
+                    fullMessage.AddRange(realGotBytes);
+                } while (_tcpSocket.Available > 0);
+
+                var receivedMessage = MessageConverter.UnPackMessage(fullMessage.ToArray());
+
+                switch (receivedMessage)
+                {
+                    case SendTextMessage sendTextMessage:
+                        if (!string.IsNullOrEmpty(sendTextMessage.TextMessage))
+                        {
+                            _chatMessages.Add(new ChatMessage(sendTextMessage.UserName, sendTextMessage.TextMessage,
+                                DateTime.Now));
+                        }
+                        break;
+                }
+            }
+
         }
 
 
@@ -63,10 +98,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
         public async void SendMessage(Message message)
         {
             var sendingMessage = MessageConverter.PackMessage(message);
-            await _tcpSocket.SendAsync(sendingMessage, SocketFlags.None); //TODO доходит
-            //TODO добавить регистрацию
-            //TODO 
-            //TODO
+            await _tcpSocket.SendAsync(sendingMessage, SocketFlags.None);
         }
 
         public async Task<bool> RegisterUser(string name)

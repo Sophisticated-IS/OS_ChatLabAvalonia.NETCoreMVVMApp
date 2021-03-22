@@ -3,6 +3,7 @@
         xmlns:vm="using:OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:OS_ChatLabAvalonia.NETCoreMVVMApp.Views"
         mc:Ignorable="d"
         d:DesignWidth="800"
         d:DesignHeight="450"
@@ -11,7 +12,12 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="Кросс - платформенный чат Сова И.С. КМБ"
         Foreground="{StaticResource SystemBaseHighColor}"
-        IsEnabled="{Binding IsWindowEnabled,Mode=OneWay}">
+        IsEnabled="{Binding IsWindowEnabled,Mode=OneWay}"
+        x:Name="RootWindow">
+
+    <Window.Resources>
+        <views:ConverterDONothing x:Key="ConverterDoNothing" />
+    </Window.Resources>
 
     <!-- <Design.DataContext> -->
     <!--     <vm:MainWindowViewModel /> -->
@@ -34,19 +40,30 @@
               RowDefinitions="*,Auto,Auto">
 
             <Grid Grid.Row="0">
-                <ListBox Items="{Binding ChatMessages,Mode=OneWay}">
-                   <ListBox.ItemTemplate>
-                       <DataTemplate>
-                           <StackPanel Orientation="Vertical">
-                               <StackPanel Orientation="Horizontal">
-                                   <Label Foreground="Blue" Content="{Binding UserName}"/>
-                                   <Label Foreground="Gray" Content="{Binding Date}"/>
-                               </StackPanel>
-                               
-                               <TextBlock Margin="5,3,0,0" Text="{Binding Message}"/>
-                           </StackPanel>
-                       </DataTemplate>
-                   </ListBox.ItemTemplate>
+                <ListBox Items="{Binding ChatMessages,Mode=OneWay}"
+                         x:Name="ListBoxMessages">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal">
+                                    <Label Foreground="Blue"
+                                           Content="{Binding UserName}" />
+                                    <Label Foreground="Gray"
+                                           Content="{Binding Date}" />
+                                </StackPanel>
+
+                                <TextBlock Margin="5,3,0,0"
+                                           Text="{Binding Message}" />
+
+                                <Button Margin="5,3,0,0"
+                                        Content="Load"
+                                        
+                                        Command="{Binding ElementName=RootWindow,Path=DataContext.LoadFileCommand}"
+                                        CommandParameter="{Binding Message}"
+                                        IsVisible="{Binding IsFileMessage}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
                 </ListBox>
             </Grid>
 
@@ -57,7 +74,7 @@
                 <Grid ColumnDefinitions="Auto,*,Auto">
 
                     <Button Grid.Column="0"
-                            Command="{Binding Mode=OneWay}">
+                            Command="{Binding SendFileCommand, Mode=OneWay}">
                         <Image Source="../Assets/Images/add.ico"
                                MaxHeight="50" />
                     </Button>
@@ -68,11 +85,12 @@
                              MaxLength="5000"
                              MaxHeight="200">
                         <TextBox.KeyBindings>
-                            <KeyBinding Gesture="Enter" Command="{Binding SendMessageCommand,Mode=OneWay}"></KeyBinding>
+                            <KeyBinding Gesture="Enter"
+                                        Command="{Binding SendMessageCommand,Mode=OneWay}" />
                         </TextBox.KeyBindings>
-                        </TextBox>
-                        <Button Grid.Column="2"
-                                Command="{Binding SendMessageCommand,Mode=OneWay}">
+                    </TextBox>
+                    <Button Grid.Column="2"
+                            Command="{Binding SendMessageCommand,Mode=OneWay}">
                         <Image Source="../Assets/Images/send.ico"
                                MaxHeight="50" />
                     </Button>
@@ -81,7 +99,8 @@
             </Border>
 
             <Grid Grid.Row="2">
-                <Border Background="#708090" Padding="3,0,0,0">
+                <Border Background="#708090"
+                        Padding="3,0,0,0">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Connection Status:"
                                Padding="0" />
@@ -109,8 +128,8 @@
                    Background="#151414" />
 
             <ListBox Grid.Row="1"
-                     FontSize="14" Items="{Binding UsersInChat, Mode=OneWay}">
-            </ListBox>
+                     FontSize="14"
+                     Items="{Binding UsersInChat, Mode=OneWay}" />
         </Grid>
     </Grid>
 </Window>

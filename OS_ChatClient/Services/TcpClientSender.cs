@@ -71,7 +71,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                         if (!string.IsNullOrEmpty(sendTextMessage.TextMessage))
                         {
                             _chatMessages.Add(new ChatMessage(sendTextMessage.UserName, sendTextMessage.TextMessage,
-                                DateTime.Now));
+                                DateTime.Now,false));
                             if (!_usersInChat.Contains(sendTextMessage.UserName))
                             {
                                 _usersInChat.Add(sendTextMessage.UserName);

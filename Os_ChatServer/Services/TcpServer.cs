@@ -129,8 +129,8 @@ namespace Os_ChatServer.Services
                     {
                         var filesServerAddressMessage = new FilesServerAddressMessage
                         {
-                            ServerIP = FtpServer.IP,
-                            ServerPort = FtpServer.Port
+                            ServerPort = FtpServer.Port,
+                            ServerIP = FtpServer.FTPServerIP
                         };
                         var sendingMessage = MessageConverter.PackMessage(filesServerAddressMessage);
                         await socket.SendAsync(sendingMessage, SocketFlags.None, CancellationToken.None)

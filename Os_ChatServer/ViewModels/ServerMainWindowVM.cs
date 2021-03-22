@@ -15,7 +15,7 @@ namespace Os_ChatServer.ViewModels
     {
         private UdpServer _udpServer;
         private TcpServer _tcpServer;
-
+        // private FtpServer _ftpServer;
         public ConcurrentDictionary<string,Socket> ChatClients { get;}
         
         

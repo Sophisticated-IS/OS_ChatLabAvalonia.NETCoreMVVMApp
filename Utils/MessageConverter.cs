@@ -1,10 +1,12 @@
-﻿using Messages.Base;
+﻿using Messages;
+using Messages.Base;
+using Messages.TftpServerMessages.Base;
 
 namespace Utils
 {
     public static class MessageConverter
     {
-        public static byte[] PackMessage(Message message)
+        public static byte[] PackMessage<T>(T message)  where T : IMessageProvider
         {
             var serializedMessage = Serializer.Serialize(message);
             var compressedMessage = ByteCompressor.Compress(serializedMessage);

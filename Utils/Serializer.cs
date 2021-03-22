@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Messages;
 using Messages.Base;
 using Protobuf = ProtoBuf.Serializer;
 
@@ -7,7 +8,7 @@ namespace Utils
 {
     public static class Serializer
     {
-        public static byte[] Serialize(Message message)
+        public static byte[] Serialize<T>(T message) where T : IMessageProvider
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 

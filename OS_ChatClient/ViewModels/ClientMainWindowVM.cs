@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Messages.ClientMessage.AuthorizedUserMessages;
@@ -35,6 +38,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         public ObservableCollection<string> UsersInChat { get;}
         public string ChatMessageText { get; set; }
         public ReactiveCommand<Unit,Unit> SendMessageCommand { get;  }
+        public ReactiveCommand<string,Unit> LoadFileCommand { get;  }
         public ReactiveCommand<Unit,Unit> SendFileCommand { get; set; }
         public StatusConnection ConnectionStatus
         {
@@ -60,16 +64,41 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             ConnectionStatusColor = Brushes.Red;
             _udpClientSender = new UdpClientSender();
             SendMessageCommand = ReactiveCommand.Create(SendMessage);
+            LoadFileCommand = ReactiveCommand.Create<string>(LoadFile);
+            SendFileCommand = ReactiveCommand.Create(SendFile);
             ConnectToServer();
             ChatMessages = new ObservableCollection<ChatMessage>();
             UsersInChat = new ObservableCollection<string>();
+        }
+
+        private async void SendFile()
+        {
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.AllowMultiple = false;
+            string filePath = null;
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var result = await openFileDialog.ShowAsync(desktop.MainWindow);
+                if (result.Length == 0) return ;
+                filePath = result.First();
+            }
+
+            var fileName = Path.GetFileName(filePath);
+
+            var msg = new ChatMessage(_userName, fileName, DateTime.Now, true);
+            ChatMessages.Add(msg);
+        }
+
+        private void LoadFile(string fileNameParameter)
+        {
+            
         }
 
         private void SendMessage()
         {
             var mess = new SendTextMessage {TextMessage = ChatMessageText,UserName = _userName};
             _tcpClientSender.SendMessage(mess);
-            ChatMessages.Add(new ChatMessage(_userName,ChatMessageText,DateTime.Now));
+            ChatMessages.Add(new ChatMessage(_userName,ChatMessageText,DateTime.Now,false));
         }
 
         

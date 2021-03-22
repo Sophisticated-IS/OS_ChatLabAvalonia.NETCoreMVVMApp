@@ -3,8 +3,8 @@
 namespace Messages.TftpServerMessages.Base
 {
     [ProtoContract]
-    [ProtoInclude(1,typeof(SendPartFileMessage))]
-    [ProtoInclude(2,typeof(SendPartFileMessage))]
+    [ProtoInclude(120,typeof(SendPartFileMessage))]
+    [ProtoInclude(130,typeof(StartLoadFileMessage))]
     public abstract class TftpMessage : IMessageProvider
     {
         

@@ -14,10 +14,7 @@
         Foreground="{StaticResource SystemBaseHighColor}"
         IsEnabled="{Binding IsWindowEnabled,Mode=OneWay}"
         x:Name="RootWindow">
-
-    <Window.Resources>
-        <views:ConverterDONothing x:Key="ConverterDoNothing" />
-    </Window.Resources>
+    
 
     <!-- <Design.DataContext> -->
     <!--     <vm:MainWindowViewModel /> -->

@@ -14,10 +14,10 @@ namespace Utils
             return compressedMessage;
         }
 
-        public static Message UnPackMessage(byte[] data)
+        public static T UnPackMessage<T>(byte[] data)
         {
             var decompressData = ByteCompressor.DeCompress(data);
-            var deserializedMessage = Serializer.DeSerialize(decompressData);
+            var deserializedMessage = Serializer.DeSerialize<T>(decompressData);
             
             return deserializedMessage;
         }

@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Messages.Base;
 using Messages.ClientMessage.NotAuthorizedUserMessages;
 using Messages.ServerMessage.ServerAddressMessage;
 using Utils;
@@ -38,7 +39,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                         var serverEndPoint = new IPEndPoint(IPAddress.Any,0);
                         var answer = _udpClient.Receive(ref serverEndPoint);
                         
-                        var receivedMessage = MessageConverter.UnPackMessage(answer);
+                        var receivedMessage = MessageConverter.UnPackMessage<Message>(answer);
                         switch (receivedMessage)
                         {
                             case TextServerAddressMessage serverAddressMessage:

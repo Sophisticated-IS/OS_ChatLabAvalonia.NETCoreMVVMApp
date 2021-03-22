@@ -63,7 +63,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                     fullMessage.AddRange(realGotBytes);
                 } while (_tcpSocket.Available > 0);
 
-                var receivedMessage = MessageConverter.UnPackMessage(fullMessage.ToArray());
+                var receivedMessage = MessageConverter.UnPackMessage<Message>(fullMessage.ToArray());
 
                 switch (receivedMessage)
                 {
@@ -119,7 +119,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
             var bytesAmount = await _tcpSocket.ReceiveAsync(data, SocketFlags.None);
 
             var answerMessage = data.Take(bytesAmount).ToArray();
-            var resultMessage = MessageConverter.UnPackMessage(answerMessage);
+            var resultMessage = MessageConverter.UnPackMessage<Message>(answerMessage);
 
             switch (resultMessage)
             {

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using Messages.Base;
 using Messages.ClientMessage.NotAuthorizedUserMessages;
 using Messages.ServerMessage.ServerAddressMessage;
 using Utils;
@@ -30,7 +31,7 @@ namespace Os_ChatServer.Services
 
 
                     
-                    var receivedMessage = MessageConverter.UnPackMessage(data);
+                    var receivedMessage = MessageConverter.UnPackMessage<Message>(data);
                     switch (receivedMessage)
                     {
                         case WhoIsServerMessage:

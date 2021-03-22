@@ -19,11 +19,11 @@ namespace Utils
             }
         }
 
-        public static Message DeSerialize(byte[] bytes)
+        public static T DeSerialize<T>(byte[] bytes) 
         {
             using (var memStr = new MemoryStream(bytes))
             {
-                return ProtoBuf.Serializer.Deserialize<Message>(memStr);
+                return ProtoBuf.Serializer.Deserialize<T>(memStr);
             }
         }
     }

@@ -15,7 +15,7 @@ namespace Os_ChatServer.ViewModels
     {
         private UdpServer _udpServer;
         private TcpServer _tcpServer;
-        // private FtpServer _ftpServer;
+        private TftpServer _tftpServer;
         public ConcurrentDictionary<string,Socket> ChatClients { get;}
         
         
@@ -26,8 +26,10 @@ namespace Os_ChatServer.ViewModels
                 _udpServer = new UdpServer();
                 ChatClients = new ConcurrentDictionary<string, Socket>();
                 _tcpServer = new TcpServer(ChatClients);
+                _tftpServer = new TftpServer();
                 ThreadPool.QueueUserWorkItem(_udpServer.Run);
                 ThreadPool.QueueUserWorkItem(_tcpServer.Run);//WaitCallBack???
+                ThreadPool.QueueUserWorkItem(_tftpServer.Run);
             }
             catch (Exception e)
             {

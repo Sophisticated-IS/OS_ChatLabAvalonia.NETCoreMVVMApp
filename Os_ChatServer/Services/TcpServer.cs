@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Messages.Base;
 using Messages.ClientMessage.AuthorizedUserMessages;
 using Messages.ClientMessage.NotAuthorizedUserMessages;
 using Messages.ServerMessage;
@@ -89,7 +90,7 @@ namespace Os_ChatServer.Services
 
                 if (!clientConnected) return;
 
-                var receivedMessage = MessageConverter.UnPackMessage(fullMessage.ToArray());
+                var receivedMessage = MessageConverter.UnPackMessage<Message>(fullMessage.ToArray());
                 switch (receivedMessage)
                 {
                     case RegisterNewUserMessage registerNewUserMessage:
@@ -129,8 +130,8 @@ namespace Os_ChatServer.Services
                     {
                         var filesServerAddressMessage = new FilesServerAddressMessage
                         {
-                            ServerPort = FtpServer.Port,
-                            ServerIP = FtpServer.FTPServerIP
+                            ServerPort = TftpServer.Port,
+                            ServerIP = TftpServer.FTPServerIP
                         };
                         var sendingMessage = MessageConverter.PackMessage(filesServerAddressMessage);
                         await socket.SendAsync(sendingMessage, SocketFlags.None, CancellationToken.None)

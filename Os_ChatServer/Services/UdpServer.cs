@@ -42,7 +42,7 @@ namespace Os_ChatServer.Services
                                 ServerPort = TcpServer.TcpServerPort
                             };
                             
-                            var sendingMessage = MessageConverter.PackMessage(answer);
+                            var sendingMessage = MessageConverter.PackMessage<Message>(answer);
                             _serverUdp.Send(sendingMessage, sendingMessage.Length, senderEndPoint);
                             break;
                     }

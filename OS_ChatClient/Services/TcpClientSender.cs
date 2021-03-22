@@ -11,6 +11,7 @@ using Messages.Base;
 using Messages.ClientMessage.AuthorizedUserMessages;
 using Messages.ClientMessage.NotAuthorizedUserMessages;
 using Messages.ServerMessage;
+using Messages.ServerMessage.ServerAddressMessage;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Models;
 using Utils;
 
@@ -104,7 +105,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
 
         public async void SendMessage(Message message)
         {
-            var sendingMessage = MessageConverter.PackMessage(message);
+            var sendingMessage = MessageConverter.PackMessage<Message>(message);
             await _tcpSocket.SendAsync(sendingMessage, SocketFlags.None);
         }
 
@@ -112,7 +113,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
         {
             if (string.IsNullOrEmpty(name)) return false;
             var registerNewUserMessage = new RegisterNewUserMessage {NewUserName = name};
-            var sendingMessage = MessageConverter.PackMessage(registerNewUserMessage);
+            var sendingMessage = MessageConverter.PackMessage<Message>(registerNewUserMessage);
             await _tcpSocket.SendAsync(sendingMessage, SocketFlags.None);
 
             var data = new byte[1024];
@@ -133,6 +134,27 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
             }
         }
 
+
+        public async Task<(string IP, int Port)> GetTftpServerAddress()
+        {
+            var getAddressMessage = new GetFilesServerAddressMessage();
+            var sendingBytes = MessageConverter.PackMessage(getAddressMessage);
+            await _tcpSocket.SendAsync(sendingBytes, SocketFlags.None);
+
+            var buffer = new byte[1024];
+            var realBytesAmount = await _tcpSocket.ReceiveAsync(buffer, SocketFlags.None);
+            var gotData = buffer.Take(realBytesAmount).ToArray();
+            var gotMessage = MessageConverter.UnPackMessage<Message>(gotData);
+
+            switch (gotMessage)
+            {
+                case FilesServerAddressMessage filesServerAddressMessage: 
+                    return (filesServerAddressMessage.ServerIP, filesServerAddressMessage.ServerPort);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(gotMessage));
+            }
+            
+        }
         ~TcpClientSender()
         {
             _tcpSocket?.Disconnect(false);

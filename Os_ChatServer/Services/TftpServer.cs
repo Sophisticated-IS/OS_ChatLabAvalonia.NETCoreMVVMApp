@@ -15,8 +15,8 @@ namespace Os_ChatServer.Services
     public sealed class TftpServer
     {
         private Socket _serverTFTP;
-        public const int Port = 9999;
-        public const string FTPServerIP = "192.168.168.168";
+        public const int Port = 1025;
+        public const string FTPServerIP = "127.0.0.87";
 
         public TftpServer()
         {
@@ -34,22 +34,22 @@ namespace Os_ChatServer.Services
             while (true)
             {
                 var fullMessage = new List<byte>(1024);
-                var clientFile = await _serverTFTP.AcceptAsync().ConfigureAwait(false);
-                
-                do
+                using (var clientFile = await _serverTFTP.AcceptAsync().ConfigureAwait(false))
                 {
-                    var buffer = new byte[1024];
-                    var res = await clientFile.ReceiveAsync(buffer,SocketFlags.None);
-                    fullMessage.AddRange(buffer.Take(res));
-                } while (clientFile.Available > 0);
+                    do
+                    {
+                        var buffer = new byte[1024];
+                        var res = await clientFile.ReceiveAsync(buffer,SocketFlags.None);
+                        fullMessage.AddRange(buffer.Take(res));
+                    } while (clientFile.Available > 0);
 
-                var message = MessageConverter.UnPackMessage<TftpMessage>(fullMessage.ToArray());
+                    var message = MessageConverter.UnPackMessage<TftpMessage>(fullMessage.ToArray());
                 
-                switch (message)
-                {
+                    switch (message)
+                    {
                     
+                    }
                 }
-                
                 
             }
         }

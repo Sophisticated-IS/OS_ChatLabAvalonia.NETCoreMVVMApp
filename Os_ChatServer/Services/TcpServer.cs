@@ -99,14 +99,14 @@ namespace Os_ChatServer.Services
                         if (isUserRegistered)
                         {
                             var successMessage = new ServerSuccessMessage();
-                            var sendingMessage = MessageConverter.PackMessage(successMessage);
+                            var sendingMessage = MessageConverter.PackMessage<Message>(successMessage);
                             await socket.SendAsync(sendingMessage, SocketFlags.None, CancellationToken.None)
                                 .ConfigureAwait(false);
                         }
                         else
                         {
                             var failMessage = new ServerFailMessage();
-                            var sendingMessage = MessageConverter.PackMessage(failMessage);
+                            var sendingMessage = MessageConverter.PackMessage<Message>(failMessage);
                             await socket.SendAsync(sendingMessage, SocketFlags.None, CancellationToken.None)
                                 .ConfigureAwait(false);
                         }
@@ -119,7 +119,7 @@ namespace Os_ChatServer.Services
                             //посылаем сообщение ко всем клиентам, кроме того от которого пришло это сообщение
                             if (socket.RemoteEndPoint != client.RemoteEndPoint)
                             {
-                                var sendingMessage = MessageConverter.PackMessage(sendTextMessage);
+                                var sendingMessage = MessageConverter.PackMessage<Message>(sendTextMessage);
                                 await client.SendAsync(sendingMessage, SocketFlags.None).ConfigureAwait(false);
                             }
                         }
@@ -133,7 +133,7 @@ namespace Os_ChatServer.Services
                             ServerPort = TftpServer.Port,
                             ServerIP = TftpServer.FTPServerIP
                         };
-                        var sendingMessage = MessageConverter.PackMessage(filesServerAddressMessage);
+                        var sendingMessage = MessageConverter.PackMessage<Message>(filesServerAddressMessage);
                         await socket.SendAsync(sendingMessage, SocketFlags.None, CancellationToken.None)
                             .ConfigureAwait(false);
                     }

@@ -10,7 +10,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Messages.ClientMessage.AuthorizedUserMessages;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Models;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Services;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.Views;
@@ -28,18 +27,20 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         }
 
         private readonly UdpClientSender _udpClientSender;
-        private  TcpClientSender _tcpClientSender;
+        private TcpClientSender _tcpClientSender;
+        private TftpClientSender _tftpClientSender;
         private StatusConnection _connectionStatus;
         private ISolidColorBrush _connectionStatusColor;
         private bool _isWindowEnabled;
         private string _userName;
 
-        public ObservableCollection<ChatMessage> ChatMessages { get;}
-        public ObservableCollection<string> UsersInChat { get;}
+        public ObservableCollection<ChatMessage> ChatMessages { get; }
+        public ObservableCollection<string> UsersInChat { get; }
         public string ChatMessageText { get; set; }
-        public ReactiveCommand<Unit,Unit> SendMessageCommand { get;  }
-        public ReactiveCommand<string,Unit> LoadFileCommand { get;  }
-        public ReactiveCommand<Unit,Unit> SendFileCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> SendMessageCommand { get; }
+        public ReactiveCommand<string, Unit> LoadFileCommand { get; }
+        public ReactiveCommand<Unit, Unit> SendFileCommand { get; }
+
         public StatusConnection ConnectionStatus
         {
             get => _connectionStatus;
@@ -71,6 +72,14 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             UsersInChat = new ObservableCollection<string>();
         }
 
+        private async void GetTftpServerInformation()
+        {
+            var (ip, port) = await _tcpClientSender.GetTftpServerAddress();
+            var ipAddress = IPAddress.Parse(ip);
+            var ipEndPoint = new IPEndPoint(ipAddress,port);
+            _tftpClientSender = new TftpClientSender(ipEndPoint);
+        }
+
         private async void SendFile()
         {
             var openFileDialog = new OpenFileDialog();
@@ -79,7 +88,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var result = await openFileDialog.ShowAsync(desktop.MainWindow);
-                if (result.Length == 0) return ;
+                if (result.Length == 0) return;
                 filePath = result.First();
             }
 
@@ -87,22 +96,21 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
 
             var msg = new ChatMessage(_userName, fileName, DateTime.Now, true);
             ChatMessages.Add(msg);
+            await _tftpClientSender.SendFile(filePath);
         }
 
         private void LoadFile(string fileNameParameter)
         {
-            
         }
 
         private void SendMessage()
         {
-            var mess = new SendTextMessage {TextMessage = ChatMessageText,UserName = _userName};
+            var mess = new SendTextMessage {TextMessage = ChatMessageText, UserName = _userName};
             _tcpClientSender.SendMessage(mess);
-            ChatMessages.Add(new ChatMessage(_userName,ChatMessageText,DateTime.Now,false));
+            ChatMessages.Add(new ChatMessage(_userName, ChatMessageText, DateTime.Now, false));
         }
 
-        
-        
+
         private async void ConnectToServer()
         {
             var resultIpEndPoint = await _udpClientSender.FindServer();
@@ -111,24 +119,24 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
 
             if (resultIpEndPoint != null)
             {
-                _tcpClientSender = new TcpClientSender(resultIpEndPoint,ChatMessages,UsersInChat);
+                _tcpClientSender = new TcpClientSender(resultIpEndPoint, ChatMessages, UsersInChat);
                 ConnectionStatus = StatusConnection.Connected;
                 ConnectionStatusColor = Brushes.Lime;
 
                 var registerDialog = new UserNameDialog();
                 registerDialog.SetDataContextWithArgs(_tcpClientSender);
-                
+
                 if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 {
                     await registerDialog.ShowDialog(desktop.MainWindow);
                 }
 
-                var dataContext = (UserNameDialogVM)registerDialog.DataContext;
+                var dataContext = (UserNameDialogVM) registerDialog.DataContext;
                 _userName = dataContext.UserName;
                 UsersInChat.Add(_userName + "(YOU)");
+                GetTftpServerInformation();
                 IsWindowEnabled = true;
                 _tcpClientSender.Run();
-                
             }
         }
     }

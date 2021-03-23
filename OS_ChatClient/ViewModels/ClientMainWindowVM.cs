@@ -115,7 +115,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         {
             var resultIpEndPoint = await _udpClientSender.FindServer();
             //искуственная задержка
-            await Task.Delay(TimeSpan.FromSeconds(4));
+            await Task.Delay(TimeSpan.FromSeconds(2));
 
             if (resultIpEndPoint != null)
             {

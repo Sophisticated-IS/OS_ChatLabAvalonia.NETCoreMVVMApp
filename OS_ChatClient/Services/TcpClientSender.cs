@@ -26,8 +26,8 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
 
         private Socket _tcpSocket;
 
-        private static List<string> TcpIPs = new List<string>(){"127.0.0.98","127.0.0.99"}; 
-        private static List<int> TcpPorts = new List<int>(){8084,8094};
+        private static List<string> TcpIPs = new List<string>() {"127.0.0.98", "127.0.0.99"};
+        private static List<int> TcpPorts = new List<int>() {8084, 8094};
 
         public TcpClientSender(IPEndPoint serverIpEndPoint, [NotNull] ObservableCollection<ChatMessage> chatMessages,
             [NotNull] ObservableCollection<string> usersInChat)
@@ -47,7 +47,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                 TcpClientIP = TcpIPs.Last();
                 TcpClientPort = TcpPorts.Last();
             }
-            
+
             SetConnection(serverIpEndPoint);
         }
 
@@ -58,12 +58,23 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                 var fullMessage = new List<byte>(1024);
                 do
                 {
-                    var buffer = new byte[1024];
-                    var bytesAmount =await _tcpSocket.ReceiveAsync(buffer, SocketFlags.None);
-                    var realGotBytes = buffer.Take(bytesAmount);
-                    fullMessage.AddRange(realGotBytes);
+                    try
+                    {
+                        var buffer = new byte[1024];
+                        var bytesAmount = await _tcpSocket.ReceiveAsync(buffer, SocketFlags.None);
+                        var realGotBytes = buffer.Take(bytesAmount);
+                        fullMessage.AddRange(realGotBytes);
+                    }
+                    catch (Exception e)
+                    {
+                        fullMessage.Clear();
+                        break;
+                    }
                 } while (_tcpSocket.Available > 0);
 
+                if (fullMessage.Count == 0)
+                    continue;
+                
                 var receivedMessage = MessageConverter.UnPackMessage<Message>(fullMessage.ToArray());
 
                 switch (receivedMessage)
@@ -72,16 +83,16 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                         if (!string.IsNullOrEmpty(sendTextMessage.TextMessage))
                         {
                             _chatMessages.Add(new ChatMessage(sendTextMessage.UserName, sendTextMessage.TextMessage,
-                                DateTime.Now,false));
+                                DateTime.Now, sendTextMessage.IsFileNameMessage));
                             if (!_usersInChat.Contains(sendTextMessage.UserName))
                             {
                                 _usersInChat.Add(sendTextMessage.UserName);
                             }
                         }
+
                         break;
                 }
             }
-
         }
 
 
@@ -148,13 +159,13 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
 
             switch (gotMessage)
             {
-                case FilesServerAddressMessage filesServerAddressMessage: 
+                case FilesServerAddressMessage filesServerAddressMessage:
                     return (filesServerAddressMessage.ServerIP, filesServerAddressMessage.ServerPort);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(gotMessage));
             }
-            
         }
+
         ~TcpClientSender()
         {
             _tcpSocket?.Disconnect(false);

@@ -97,15 +97,27 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             var msg = new ChatMessage(_userName, fileName, DateTime.Now, true);
             ChatMessages.Add(msg);
             await _tftpClientSender.SendFile(filePath);
+            var fileLoadedMessage = new SendTextMessage()
+                {TextMessage = fileName, IsFileNameMessage = true, UserName = _userName};
+            _tcpClientSender.SendMessage(fileLoadedMessage);
         }
 
-        private void LoadFile(string fileNameParameter)
+        private async void LoadFile(string fileNameParameter)
         {
+            var saveFiledlg = new SaveFileDialog(){InitialFileName = fileNameParameter};
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                string dlgRes = await saveFiledlg.ShowAsync(desktop.MainWindow);
+                if (!string.IsNullOrEmpty(dlgRes))
+                {
+                    //todo LOAD file
+                }
+            }
         }
 
         private void SendMessage()
         {
-            var mess = new SendTextMessage {TextMessage = ChatMessageText, UserName = _userName};
+            var mess = new SendTextMessage {TextMessage = ChatMessageText, UserName = _userName,IsFileNameMessage = false};
             _tcpClientSender.SendMessage(mess);
             ChatMessages.Add(new ChatMessage(_userName, ChatMessageText, DateTime.Now, false));
         }

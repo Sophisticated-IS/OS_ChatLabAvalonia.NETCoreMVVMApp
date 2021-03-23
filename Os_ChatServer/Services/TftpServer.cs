@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
-using Messages.Base;
 using Messages.ServerMessage;
 using Messages.TftpServerMessages;
 using Messages.TftpServerMessages.Base;
@@ -43,6 +42,8 @@ namespace Os_ChatServer.Services
             {
                 using (var clientFile = await _serverTFTP.AcceptAsync().ConfigureAwait(false))
                 {
+                    var resultFile = new List<byte>(1024);
+                    string filePath = null;
                     var isFileEndReceiving = false;
                     while (!isFileEndReceiving)
                     {
@@ -57,16 +58,31 @@ namespace Os_ChatServer.Services
                         var message = MessageConverter.UnPackMessage<TftpMessage>(fullMessage.ToArray());
                         switch (message)
                         {
-                            case StartLoadFileMessage:
+                            case StartLoadFileMessage startLoadFileMessage:
 
+                                const string? dir = "files";
+                                var basePath = AppDomain.CurrentDomain.BaseDirectory;
+                                if (!Directory.Exists(dir))
+                                {
+                                    Directory.CreateDirectory(dir);
+                                }
+
+                                filePath = dir + @"/" + startLoadFileMessage.FileName;
+                                filePath = Path.Combine(basePath, filePath);
+                                if (!File.Exists(filePath))
+                                {
+                                    File.Create(filePath);
+                                }
+                                
                                 await AcceptFileMessage(clientFile);
                                 break;
-                            case SendPartFileMessage:
-
+                            case SendPartFileMessage sendPartFileMessage:
+                                resultFile.AddRange(sendPartFileMessage.BytesData);
                                 await AcceptFileMessage(clientFile);
                                 break;
                             case EndLoadFileMessage:
 
+                                await File.WriteAllBytesAsync(filePath,resultFile.ToArray());
                                 await AcceptFileMessage(clientFile);
                                 isFileEndReceiving = true;
                                 break;

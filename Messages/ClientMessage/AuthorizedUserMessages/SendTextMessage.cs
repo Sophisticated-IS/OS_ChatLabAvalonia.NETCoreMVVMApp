@@ -8,5 +8,8 @@ namespace Messages.ClientMessage.AuthorizedUserMessages
     {
         [ProtoMember(1)]
         public string TextMessage { get; set; }
+        
+        [ProtoMember(2)]
+        public bool IsFileNameMessage { get; set; }
     }
 }

@@ -7,8 +7,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp
 {
 
     //TODO Build in TERMINAL
-    // dotnet publish OS_ChatClient.csproj /p:Configuration=Release /p:P
-    // latform=AnyCPU /p:TargetFramework=netcoreapp2.1 /p:PublishDir=bin\Publish\netcoreapp2.1\linux-x64\ /p:SelfContained=true /p:RuntimeIdentifier=linux-x64
+    // dotnet publish OS_ChatClient.csproj /p:Configuration=Release /p:Platform=AnyCPU /p:TargetFramework=netcoreapp2.1 /p:PublishDir=bin\Publish\netcoreapp2.1\linux-x64\ /p:SelfContained=true /p:RuntimeIdentifier=linux-x64
 
 
     class Program

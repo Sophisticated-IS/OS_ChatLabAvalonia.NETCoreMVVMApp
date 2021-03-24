@@ -110,7 +110,8 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
                 string dlgRes = await saveFiledlg.ShowAsync(desktop.MainWindow);
                 if (!string.IsNullOrEmpty(dlgRes))
                 {
-                    //todo LOAD file
+                    var fileName = Path.GetFileName(dlgRes);
+                    await _tftpClientSender.ReceiveFile(fileName,dlgRes);
                 }
             }
         }

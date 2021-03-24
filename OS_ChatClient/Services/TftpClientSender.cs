@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Messages.Base;
@@ -40,7 +41,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
 
             async Task SendFilePartBytes(byte[] sendBuffer, TcpClient socket)
             {
-                var sendFilePartMessage = new SendPartFileMessage {BytesData = sendBuffer};
+                var sendFilePartMessage = new ReceivePartFileMessage {BytesData = sendBuffer};
                 var packedMessage = MessageConverter.PackMessage(sendFilePartMessage);
 
                 await socket.Client.SendAsync(packedMessage, SocketFlags.None);
@@ -70,9 +71,41 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
             return true;
         }
 
-        public async Task<bool> ReceiveFile([NotNull] string fileName)
+        public async Task<bool> ReceiveFile([NotNull] string fileName,string fileFullPath)
         {
-            throw new NotImplementedException();
+            using (var socket = new TcpClient($"{_serverEndPoint.Address}", _serverEndPoint.Port))
+            {
+                var askForfileexistance = new AskForStartSendingFileMessage() {FileName = fileName};
+                var packedAskForFileStartReceiving = MessageConverter.PackMessage(askForfileexistance);
+                await socket.Client.SendAsync(packedAskForFileStartReceiving, SocketFlags.None);
+
+                var bufferACK = new byte[128];
+                var realBytes = await socket.Client.ReceiveAsync(bufferACK, SocketFlags.None);
+                var answerMessage = MessageConverter.UnPackMessage<Message>(bufferACK.Take(realBytes).ToArray());
+                if (!(answerMessage is ServerSuccessMessage)) return false;
+
+                var getFilePartMessage = new AskForSendFilePartMessage();
+                var packedAskFilePart = MessageConverter.PackMessage(getFilePartMessage);
+                await socket.Client.SendAsync(packedAskFilePart, SocketFlags.None);
+
+                var fileBytes = new List<byte>();
+                do
+                {
+                    var buffer = new byte[2048];
+                    var bytesAmount = await socket.Client.ReceiveAsync(buffer, SocketFlags.None);
+                    fileBytes.AddRange(buffer.Take(bytesAmount));
+                } while (socket.Client.Available > 0);
+
+                var filesData = MessageConverter.UnPackMessage<ReceivePartFileMessage>(fileBytes.ToArray());
+
+                if (!File.Exists(fileFullPath))
+                {
+                    await File.WriteAllBytesAsync(fileFullPath,filesData.BytesData,CancellationToken.None);
+                }
+                
+            }
+
+            return true;
         }
     }
 }

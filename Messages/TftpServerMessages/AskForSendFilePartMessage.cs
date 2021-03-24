@@ -4,9 +4,7 @@ using ProtoBuf;
 namespace Messages.TftpServerMessages
 {
     [ProtoContract]
-    public sealed class SendPartFileMessage : TftpMessage
+    public sealed class AskForSendFilePartMessage : TftpMessage
     {
-        [ProtoMember(1)]
-        public  byte[] BytesData { get; set; }
     }
 }

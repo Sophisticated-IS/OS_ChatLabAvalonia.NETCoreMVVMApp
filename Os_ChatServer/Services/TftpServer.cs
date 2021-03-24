@@ -25,7 +25,7 @@ namespace Os_ChatServer.Services
 
         public async void Run(object? state)
         {
-            async Task AcceptFileMessage(Socket clientFile)
+            async Task SendAcceptFileMessage(Socket clientFile)
             {
                 var acceptMessage = new ServerSuccessMessage();
                 var packedAccept = MessageConverter.PackMessage(acceptMessage);
@@ -44,6 +44,7 @@ namespace Os_ChatServer.Services
                 {
                     var resultFile = new List<byte>(1024);
                     string filePath = null;
+                    string fileSendToClientPAth = null;
                     var isFileEndReceiving = false;
                     while (!isFileEndReceiving)
                     {
@@ -61,31 +62,63 @@ namespace Os_ChatServer.Services
                             case StartLoadFileMessage startLoadFileMessage:
 
                                 const string? dir = "files";
-                                var basePath = AppDomain.CurrentDomain.BaseDirectory;
+                                // var basePath = AppDomain.CurrentDomain.BaseDirectory;
                                 if (!Directory.Exists(dir))
                                 {
                                     Directory.CreateDirectory(dir);
                                 }
-
-                                filePath = dir + @"/" + startLoadFileMessage.FileName;
-                                filePath = Path.Combine(basePath, filePath);
-                                if (!File.Exists(filePath))
-                                {
-                                    File.Create(filePath);
-                                }
+                                filePath = $"{AppDomain.CurrentDomain.BaseDirectory}{dir}/{startLoadFileMessage.FileName}";
+                       
                                 
-                                await AcceptFileMessage(clientFile);
+                                await SendAcceptFileMessage(clientFile);
                                 break;
-                            case SendPartFileMessage sendPartFileMessage:
+                            case ReceivePartFileMessage sendPartFileMessage:
                                 resultFile.AddRange(sendPartFileMessage.BytesData);
-                                await AcceptFileMessage(clientFile);
+                                await SendAcceptFileMessage(clientFile);
                                 break;
                             case EndLoadFileMessage:
 
-                                await File.WriteAllBytesAsync(filePath,resultFile.ToArray());
-                                await AcceptFileMessage(clientFile);
+                                
+                                using (var stream = File.Open(filePath, FileMode.OpenOrCreate))
+                                {
+
+                                    var buff = resultFile.ToArray();
+                                    await stream.WriteAsync(buff, 0, buff.Length);
+                                }
+                                await SendAcceptFileMessage(clientFile);
                                 isFileEndReceiving = true;
                                 break;
+                            
+                            case AskForStartSendingFileMessage startSendingFileMessage:
+                                var fileONSERVErPATH = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                                    $"files/{startSendingFileMessage.FileName}");
+                                if (File.Exists(fileONSERVErPATH))
+                                {
+                                    await SendAcceptFileMessage(clientFile);
+                                    fileSendToClientPAth = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                                        $"files/{startSendingFileMessage.FileName}");
+                                }
+                                break;
+                            case AskForSendFilePartMessage sendFilePartMessage:
+                                using (var stream = File.Open(fileSendToClientPAth, FileMode.Open))
+                                {
+                                    var allBytesFromFile = new List<byte>(1024);
+                                    int byt;
+                                    while ((byt = stream.ReadByte())!=-1)
+                                    {
+                                        var byteCasted = (byte) byt;
+                                        allBytesFromFile.Add(byteCasted);
+                                    }
+                                    var sendingFilePart = new ReceivePartFileMessage {BytesData = allBytesFromFile.ToArray()};
+                                    var sendingData = MessageConverter.PackMessage(sendingFilePart);
+                                    await clientFile.SendAsync(sendingData, SocketFlags.None);
+                                    isFileEndReceiving = true;
+                                }
+
+                              
+                                break;
+                            
+                            
                         }
                     }
                 }

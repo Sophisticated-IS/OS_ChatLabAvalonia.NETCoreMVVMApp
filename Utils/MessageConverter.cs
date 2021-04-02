@@ -4,7 +4,7 @@ namespace Utils
 {
     public static class MessageConverter
     {
-        public static byte[] PackMessage<T>(Message message)
+        public static byte[] PackMessage(Message message)
         {
             var serializedMessage = Serializer.Serialize(message);
             var compressedMessage = ByteCompressor.Compress(serializedMessage);

@@ -8,8 +8,4 @@
       <PackageReference Include="protobuf-net.Core" Version="3.0.73" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="ClientMessage\AuthorizedClientMessage\Base" />
-    </ItemGroup>
-
 </Project>

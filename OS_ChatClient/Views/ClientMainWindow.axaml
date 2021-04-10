@@ -71,11 +71,11 @@
                              MaxHeight="200">
                         <TextBox.KeyBindings>
                             <KeyBinding Gesture="Enter"
-                                        Command="{Binding SendMessageCommand,Mode=OneWay}" />
+                                        Command="{Binding SendTextMessageCommand,Mode=OneWay}" />
                         </TextBox.KeyBindings>
                     </TextBox>
                     <Button Grid.Column="2"
-                            Command="{Binding SendMessageCommand,Mode=OneWay}">
+                            Command="{Binding SendTextMessageCommand,Mode=OneWay}">
                         <Image Source="../Assets/Images/send.ico"
                                MaxHeight="50" />
                     </Button>

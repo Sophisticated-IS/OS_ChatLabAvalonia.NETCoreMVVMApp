@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -35,10 +36,10 @@ namespace Os_ChatServer.Services
             EndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(_tcpIp), _tcpPort);
             tcpSocket.Bind(ipEndPoint);
             tcpSocket.Listen(100);
-            var clientConnection = await tcpSocket.AcceptAsync();
-            var isClientAdded = _clientsConnections.TryAdd(clientConnection.RemoteEndPoint, clientConnection);
-            if (isClientAdded)
+            while (true)
             {
+
+                var clientConnection = await tcpSocket.AcceptAsync();
                 ThreadPool.QueueUserWorkItem(RunServerRegistration, clientConnection);
             }
         }
@@ -82,19 +83,21 @@ namespace Os_ChatServer.Services
             {
                 var result = await clientSocket.ReceiveFromAsync(buffer, SocketFlags.None, clientIpEndPoint);
                 clientIpEndPoint = result.RemoteEndPoint;
+                if (result.ReceivedBytes == 0) throw new InvalidDataException();
+
                 return result.ReceivedBytes;
             }
             catch (Exception)
             {
                 _clientsConnections.Remove(clientSocket.RemoteEndPoint, out _);
                 _clientConnectionToken.TryRemove(clientSocket.RemoteEndPoint, out _);
-                SendClientLeavedChat();
-                
+                SendClientLeftChat();
+
                 return null;
             }
         }
 
-        private void SendClientLeavedChat()
+        private void SendClientLeftChat()
         {
             //TODO for all users 
         }
@@ -116,7 +119,6 @@ namespace Os_ChatServer.Services
         {
             var generatedToken = Guid.NewGuid();
             var clientToken = generatedToken.ToString();
-            _clientConnectionToken.TryAdd(tcpSocket.RemoteEndPoint, clientToken);
             var clientRegisteredMessage = new ClientRegisteredMessage
             {
                 ClientToken = clientToken
@@ -131,8 +133,11 @@ namespace Os_ChatServer.Services
             var packedJoinedUserMessage = MessageConverter.PackMessage(userJoinedChat);
             foreach (var connection in _clientsConnections)
             {
-                await connection.Value.SendAsync(packedJoinedUserMessage,SocketFlags.None);
+                await connection.Value.SendAsync(packedJoinedUserMessage, SocketFlags.None);
             }
+
+            _clientConnectionToken.TryAdd(tcpSocket.RemoteEndPoint, clientToken);
+            _clientsConnections.TryAdd(tcpSocket.RemoteEndPoint, tcpSocket);
         }
     }
 }

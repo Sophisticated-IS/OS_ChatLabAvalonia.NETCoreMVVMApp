@@ -4,15 +4,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="Os_ChatServer.Views.MainWindow"
+        x:Class="Os_ChatServer.Views.ServerMainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Os_ChatServer">
+        Title="Server for Chat Messenger">
 
     <!-- ГРЕБАНЫЙ ДИЗАЙНЕР ИСПОЛНЯЕТ КОД В КОНТСРУКТТОРЕ!!!!!!!!!!!! -->
     <!-- <Design.DataContext> -->
     <!--     <vm:MainWindowViewModel/> -->
     <!-- </Design.DataContext> -->
-    <Button Content="Start listening Port" Command="{Binding DoTheThing}"/>
-
-
+    
+    <Window.Styles>
+       
+    </Window.Styles>
+    <Grid Background="Gray">
+    </Grid>
+    
 </Window>

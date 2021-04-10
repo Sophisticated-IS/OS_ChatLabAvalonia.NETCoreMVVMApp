@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels;
-using OS_ChatLabAvalonia.NETCoreMVVMApp.Views;
+using Os_ChatServer.Views;
 
 namespace OS_ChatLabAvalonia.NETCoreMVVMApp
 {
@@ -15,12 +15,13 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp
 
         public override void OnFrameworkInitializationCompleted()
         {
+            var registerUserWindow = new RegisterUserWindow
+            {
+                DataContext = new RegisterUserWindowVM()
+            };
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = new MainWindowViewModel(),
-                };
+                desktop.MainWindow = registerUserWindow;
             }
 
             base.OnFrameworkInitializationCompleted();

@@ -1,11 +1,12 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Os_ChatServer.Views
 {
-    public class MainWindow : Window
+    public class ServerMainWindow : Window
     {
-        public MainWindow()
+        public ServerMainWindow()
         {
             InitializeComponent();
 #if DEBUG

@@ -9,6 +9,7 @@ namespace Messages.ClientMessage.AuthorizedClientMessage.Base
     [ProtoInclude(6, typeof(ClientSendFilePartMessage))]
     public abstract class AuthorizedClientMessage : ClientMessage.Base.ClientMessage
     {
+        [ProtoMember(1)]
         public string ClientToken { get; set; }
     }
 }

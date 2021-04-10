@@ -1,0 +1,67 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels"
+        mc:Ignorable="d"
+        d:DesignWidth="800"
+        d:DesignHeight="450"
+        MaxWidth="250"
+        MaxHeight="400"
+        x:Class="Os_ChatServer.Views.RegisterUserWindow"
+        WindowStartupLocation="CenterScreen"
+        Title="Registration"
+        Closing="Window_OnClosing">
+    
+    <Design.DataContext>
+        <viewModels:RegisterUserWindowVM />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+        <Label Grid.Row="0"
+               FontWeight="Bold"
+               FontSize="25"
+               HorizontalAlignment="Center"
+               Content="Register Now" />
+        <Image Grid.Row="1"
+               VerticalAlignment="Center"
+               HorizontalAlignment="Center"
+               Width="100"
+               Height="100"
+               Source="../Assets/Images/chatImage.png"/>
+        <TextBox Grid.Row="2"
+                 Margin="3,3,3,30"
+                 FontSize="14"
+                 Text="{Binding UserName,Mode=OneWayToSource}" 
+                 Watermark="Input User Name :)"
+                 />
+        <Button Grid.Row="3"
+                Content="TryRegister"
+                Foreground="Orange"
+                FontWeight="Bold"
+                HorizontalAlignment="Stretch"
+                Margin="0,0,0,20"
+                HorizontalContentAlignment="Center"
+                BorderThickness="2"
+                Background="Gray"
+                Command="{Binding TryRegisterCommand,Mode=OneWay}" />
+        <Grid Grid.Row="4">
+            <Border Background="#708090"
+                    Padding="3,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Connection Status:"
+                           Padding="0" />
+                    <TextBlock Text="{Binding ConnectionStatus,Mode=OneWay}"
+                               Foreground="{Binding ConnectionStatusColor,Mode=OneWay}"
+                               VerticalAlignment="Bottom"
+                               FontWeight="Bold" />
+                </StackPanel>
+            </Border>
+        </Grid>
+        <ProgressBar Grid.Row="5"
+                     IsVisible="{Binding IsProgressBarVisible,Mode=OneWay}"
+                     Foreground="Red"
+                     IsIndeterminate="True"
+                     Value="100" />
+    </Grid>
+</Window>

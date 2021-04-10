@@ -5,7 +5,6 @@ namespace Os_ChatServer.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-      
         public ConcurrentDictionary<string,Socket> ChatClients { get;}
         
         
@@ -13,5 +12,7 @@ namespace Os_ChatServer.ViewModels
         {
            
         }
+
+        
     }
 }

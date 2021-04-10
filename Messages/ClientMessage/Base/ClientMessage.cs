@@ -4,7 +4,9 @@ using ProtoBuf;
 namespace Messages.ClientMessage.Base
 {
     [ProtoContract]
-    public  class ClientMessage : Message
+    [ProtoInclude(1,typeof(AuthorizedClientMessage.Base.AuthorizedClientMessage)) ]
+    [ProtoInclude(2,typeof(UnauthorizedClientMessage.Base.UnauthorizedClientMessage))]
+    public abstract  class ClientMessage : Message
     {
         
     }

@@ -17,7 +17,7 @@ namespace Os_ChatServer
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow
+                desktop.MainWindow = new ServerMainWindow
                 {
                     DataContext = new MainWindowViewModel(),
                 };
@@ -25,5 +25,6 @@ namespace Os_ChatServer
 
             base.OnFrameworkInitializationCompleted();
         }
+        
     }
 }

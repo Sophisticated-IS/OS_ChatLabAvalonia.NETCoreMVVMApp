@@ -14,14 +14,14 @@ namespace Os_ChatServer.Services
     public sealed class ClientFinderService
     {
         public const int Port = 12300;
-        public const string BroadcastIpAddress = "10.255.255.255";
-        public const string TcpIp = "10.0.0.2";
-        public const int TcpPort = 12301;
-
-
-
-        public ClientFinderService()
+        public const string BroadcastIpAddress = "127.0.0.55"; //"10.255.255.255";
+        private readonly string _tcpIp;
+        private readonly int _tcpPort;
+        
+        public ClientFinderService(string tcpIp, int tcpPort)
         {
+            _tcpIp = tcpIp;
+            _tcpPort = tcpPort;
             ThreadPool.QueueUserWorkItem(RunUdpClientService);
         }
         private async void RunUdpClientService(object? state)
@@ -40,8 +40,9 @@ namespace Os_ChatServer.Services
                 do
                 {
                     var buffer = new byte[128];
-                    var bytesAmount = await udpSocket.ReceiveFromAsync(buffer, SocketFlags.None, clientIpEndPoint);
-                    var receivedBytes = buffer.Take(bytesAmount.ReceivedBytes);
+                    var receiveFromAsync = await udpSocket.ReceiveFromAsync(buffer, SocketFlags.None, clientIpEndPoint);
+                    var receivedBytes = buffer.Take(receiveFromAsync.ReceivedBytes);
+                    clientIpEndPoint = receiveFromAsync.RemoteEndPoint;
                     fullData.AddRange(receivedBytes);
                 } while (udpSocket.Available > 0);
 
@@ -50,11 +51,12 @@ namespace Os_ChatServer.Services
                 {
                     switch (receivedMessage)
                     {
+                        
                         case WhoIsServerMessage _:
                             var serverAddressMessage = new ServerAddressMessage
                             {
-                                Ip = TcpIp,
-                                Port = TcpPort
+                                Ip = _tcpIp,
+                                Port = (uint)_tcpPort
                             };
                             var packedMessage = MessageConverter.PackMessage(serverAddressMessage);
                             await udpSocket.SendToAsync(packedMessage, SocketFlags.None, clientIpEndPoint);

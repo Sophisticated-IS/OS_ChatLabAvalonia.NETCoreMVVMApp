@@ -11,6 +11,5 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
           
         }
         
- 
     }
 }

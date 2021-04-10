@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels"
         mc:Ignorable="d"
         d:DesignWidth="800"
         d:DesignHeight="450"
@@ -15,22 +16,11 @@
     
 
     <!-- <Design.DataContext> -->
-    <!--     <vm:MainWindowViewModel /> -->
+    <!--     <viewModels:MainWindowViewModel /> -->
     <!-- </Design.DataContext> -->
 
     <Grid ColumnDefinitions="*,Auto,Auto">
-
-        <TextBox Grid.ColumnSpan="3"
-                 IsEnabled="False"
-                 IsReadOnly="True"
-                 VerticalAlignment="Center"
-                 HorizontalAlignment="Center"
-                 Foreground="#F4A460"
-                 IsVisible="{Binding !IsWindowEnabled}"
-                 ZIndex="15">
-            Waiting for Server connection...
-        </TextBox>
-
+        
         <Grid Grid.Column="0"
               RowDefinitions="*,Auto,Auto">
 

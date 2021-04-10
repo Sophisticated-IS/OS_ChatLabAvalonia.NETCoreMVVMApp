@@ -22,6 +22,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             Connected
         }
 
+        public const string BroadcastIpAddress = "127.255.255.255"; //"10.255.255.255";
         private bool _isUserRegistered;
         private ISolidColorBrush _connectionStatusColor;
         private StatusConnection _connectionStatus;
@@ -99,11 +100,11 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             var whoIsServerMessage = new WhoIsServerMessage();
             var sendingMessageBytes = MessageConverter.PackMessage(whoIsServerMessage);
 
-            var serverPort = PortProvider.GetAvailablePort();
+            var serverPort = 12300;
             bool isServerFound = false;
             while (!isServerFound)
             {
-                var broadcastIpEndPoint = new IPEndPoint(IPAddress.Parse("10.255.255.255"), serverPort);
+                var broadcastIpEndPoint = new IPEndPoint(IPAddress.Parse(BroadcastIpAddress), serverPort);
                 try
                 {
                     await udpClient.SendAsync(sendingMessageBytes, sendingMessageBytes.Length, broadcastIpEndPoint);
@@ -123,8 +124,8 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
                     }
                 }
             }
-
-            _isUserRegistered = true;
+            
+            ConnectionStatus = StatusConnection.Connected;
         }
 
         private Task<bool> UnpackServerAnswer(byte[] buffer)
@@ -152,8 +153,10 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         public void TryRegisterCommand()
         {
             if (ConnectionStatus != StatusConnection.Connected) return;
+            if (string.IsNullOrEmpty(UserName)) return;
+            
             using var tcpClient = new TcpClient();
-            var registerRequest = new RegisterClientMessage()
+            var registerRequest = new RegisterClientMessage
             {
                 UserName = UserName
             };
@@ -171,12 +174,22 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
                     if (message is ClientRegisteredMessage clientRegisteredMessage)
                     {
                         _clientToken = clientRegisteredMessage.ClientToken;
+                        _isUserRegistered = true;
+                        CloseCurrentWindow();
                     }
                     else ;//ignored
                 }
                 else ;//ignored
             }
             else ;//не удалось установить соединение
+        }
+
+        private static void CloseCurrentWindow()
+        {
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.MainWindow.Close();
+            }
         }
 
         private bool TrySendDataToServer(TcpClient tcpClient, byte[] packedMessage)

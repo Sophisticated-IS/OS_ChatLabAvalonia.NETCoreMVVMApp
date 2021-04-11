@@ -89,8 +89,8 @@
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Connection Status:"
                                Padding="0" />
-                        <TextBlock Text="{Binding ConnectionStatus,Mode=OneWay}"
-                                   Foreground="{Binding ConnectionStatusColor,Mode=OneWay}"
+                        <TextBlock Text="Connected"
+                                   Foreground="Green"
                                    VerticalAlignment="Bottom"
                                    FontWeight="Bold" />
                     </StackPanel>

@@ -7,5 +7,7 @@ namespace Messages.ServerMessage
     {
         [ProtoMember(1)]
         public string ClientToken { get; set; }
+        [ProtoMember(2)] 
+        public string[] CurrentUsersListInChat { get; set; }
     }
 }

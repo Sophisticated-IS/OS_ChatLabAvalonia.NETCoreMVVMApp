@@ -29,7 +29,8 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         private bool _isProgressBarVisible;
         private IPEndPoint _serverEndPoint;
         private string _clientToken;
-        
+        private string[] _usersInChat;
+
         public string UserName { get; set; }
 
 
@@ -66,7 +67,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             {
                 var desktopMainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(UserName,_clientToken,_serverEndPoint)
+                    DataContext = new MainWindowViewModel(UserName,_clientToken,_usersInChat,_serverEndPoint)
                 };
                 desktop.MainWindow = desktopMainWindow;
                 desktopMainWindow.Show();
@@ -175,6 +176,8 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
                     {
                         _clientToken = clientRegisteredMessage.ClientToken;
                         _isUserRegistered = true;
+                        _usersInChat = clientRegisteredMessage.CurrentUsersListInChat;
+                        tcpClient.Close();
                         CloseCurrentWindow();
                     }
                     else ;//ignored

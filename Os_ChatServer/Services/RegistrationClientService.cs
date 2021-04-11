@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Messages.Base;
+using Messages.ClientMessage.AuthorizedClientMessage;
 using Messages.ClientMessage.UnauthorizedClientMessage;
 using Messages.ServerMessage;
 using Utils;
@@ -18,13 +19,13 @@ namespace Os_ChatServer.Services
     {
         private readonly string _tcpIp;
         private readonly int _tcpPort;
-        private ConcurrentDictionary<EndPoint, string> _clientConnectionToken;
+        private ConcurrentDictionary<string, string> _clientTokenName;
         private ConcurrentDictionary<EndPoint, Socket> _clientsConnections;
 
         public RegistrationClientService(string tcpIp, int tcpPort)
         {
             _clientsConnections = new ConcurrentDictionary<EndPoint, Socket>();
-            _clientConnectionToken = new ConcurrentDictionary<EndPoint, string>();
+            _clientTokenName = new ConcurrentDictionary<string, string>();
             _tcpIp = tcpIp;
             _tcpPort = tcpPort;
             ThreadPool.QueueUserWorkItem(ClientConnectionsAcceptor);
@@ -38,13 +39,13 @@ namespace Os_ChatServer.Services
             tcpSocket.Listen(100);
             while (true)
             {
-
                 var clientConnection = await tcpSocket.AcceptAsync();
-                ThreadPool.QueueUserWorkItem(RunServerRegistration, clientConnection);
+                _clientsConnections.TryAdd(clientConnection.RemoteEndPoint, clientConnection);
+                ThreadPool.QueueUserWorkItem(RunServerMessagesHandler, clientConnection);
             }
         }
 
-        private async void RunServerRegistration(object? state)
+        private async void RunServerMessagesHandler(object? state)
         {
             if (state is null) return;
 
@@ -70,10 +71,30 @@ namespace Os_ChatServer.Services
                     switch (receivedMessage)
                     {
                         case RegisterClientMessage registerClientMessage:
-                            HandleRegisterClientMessage(clientSocket, registerClientMessage);
+                            await HandleRegisterClientMessage(clientSocket, registerClientMessage);
+                            break;
+                        
+                        case ClientSendTextMessage clientSendTextMessage:
+                            await HandleClientSendTextMessage(clientSocket,clientSendTextMessage);
                             break;
                     }
                 }
+            }
+        }
+
+        private async Task HandleClientSendTextMessage(Socket clientSocket, ClientSendTextMessage clientSendTextMessage)
+        {
+            var newTextMessageSent = new NewTextMessageSent
+            {
+                TextMessage = clientSendTextMessage.TextMessage,
+                UserName = _clientTokenName[clientSendTextMessage.ClientToken]
+            };
+            foreach (var clientConnection in _clientsConnections)
+            {
+                if (clientConnection.Value.RemoteEndPoint == clientSocket.RemoteEndPoint) continue;
+                
+                var message = MessageConverter.PackMessage(newTextMessageSent);
+                await clientConnection.Value.SendAsync(message,SocketFlags.None);
             }
         }
 
@@ -90,9 +111,8 @@ namespace Os_ChatServer.Services
             catch (Exception)
             {
                 _clientsConnections.Remove(clientSocket.RemoteEndPoint, out _);
-                _clientConnectionToken.TryRemove(clientSocket.RemoteEndPoint, out _);
                 SendClientLeftChat();
-
+                clientSocket.Close();
                 return null;
             }
         }
@@ -119,25 +139,29 @@ namespace Os_ChatServer.Services
         {
             var generatedToken = Guid.NewGuid();
             var clientToken = generatedToken.ToString();
-            var clientRegisteredMessage = new ClientRegisteredMessage
-            {
-                ClientToken = clientToken
-            };
-            var packedMessage = MessageConverter.PackMessage(clientRegisteredMessage);
-            await tcpSocket.SendAsync(packedMessage, SocketFlags.None);
 
-            var userJoinedChat = new NewUserConnected()
+            var userJoinedChat = new NewUserConnected
             {
                 UserName = registerClientMessage.UserName
             };
             var packedJoinedUserMessage = MessageConverter.PackMessage(userJoinedChat);
             foreach (var connection in _clientsConnections)
             {
-                await connection.Value.SendAsync(packedJoinedUserMessage, SocketFlags.None);
+                if (connection.Value.RemoteEndPoint != tcpSocket.RemoteEndPoint)
+                {
+                    await connection.Value.SendAsync(packedJoinedUserMessage, SocketFlags.None);
+                }
             }
-
-            _clientConnectionToken.TryAdd(tcpSocket.RemoteEndPoint, clientToken);
-            _clientsConnections.TryAdd(tcpSocket.RemoteEndPoint, tcpSocket);
+            
+            _clientTokenName.TryAdd(clientToken,registerClientMessage.UserName);
+            var users = _clientTokenName.Values.ToArray();
+            var clientRegisteredMessage = new ClientRegisteredMessage
+            {
+                ClientToken = clientToken,
+                CurrentUsersListInChat = users
+            };
+            var packedMessage = MessageConverter.PackMessage(clientRegisteredMessage);
+            await tcpSocket.SendAsync(packedMessage, SocketFlags.None);
         }
     }
 }

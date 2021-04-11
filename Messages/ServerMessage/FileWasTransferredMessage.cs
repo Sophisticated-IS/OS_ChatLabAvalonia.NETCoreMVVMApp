@@ -9,5 +9,8 @@ namespace Messages.ServerMessage
         public string FileToken { get; set; }
         [ProtoMember(2)]
         public string FileName { get; set; }
+
+        [ProtoMember(3)]
+        public string UserName { get; set; }
     }
 }

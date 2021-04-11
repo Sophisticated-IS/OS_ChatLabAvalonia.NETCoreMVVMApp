@@ -21,11 +21,13 @@ namespace Os_ChatServer.Services
         private readonly int _tcpPort;
         private ConcurrentDictionary<string, string> _clientTokenName;
         private ConcurrentDictionary<EndPoint, Socket> _clientsConnections;
+        private ConcurrentDictionary<string, string> _TokenFilePath;
 
         public RegistrationClientService(string tcpIp, int tcpPort)
         {
             _clientsConnections = new ConcurrentDictionary<EndPoint, Socket>();
             _clientTokenName = new ConcurrentDictionary<string, string>();
+            _TokenFilePath = new ConcurrentDictionary<string, string>();
             _tcpIp = tcpIp;
             _tcpPort = tcpPort;
             ThreadPool.QueueUserWorkItem(ClientConnectionsAcceptor);
@@ -77,6 +79,10 @@ namespace Os_ChatServer.Services
                         case ClientSendTextMessage clientSendTextMessage:
                             await HandleClientSendTextMessage(clientSocket,clientSendTextMessage);
                             break;
+                        
+                        case ClientSendFilePartMessage clientSendFilePartMessage:
+                            await HandleClientSendFilePartMessage(clientSocket, clientSendFilePartMessage);
+                            break;
                     }
                 }
             }
@@ -96,6 +102,36 @@ namespace Os_ChatServer.Services
                 var message = MessageConverter.PackMessage(newTextMessageSent);
                 await clientConnection.Value.SendAsync(message,SocketFlags.None);
             }
+        }
+
+
+        private async Task HandleClientSendFilePartMessage(Socket clientSocket, ClientSendFilePartMessage clientSendFilePart)
+        {
+            await using var fileWriter = new FileStream(clientSendFilePart.FileName,FileMode.Append);
+            var data = clientSendFilePart.Data;
+            
+            if (data.Length == 0)
+            {
+                var name = _clientTokenName[clientSendFilePart.ClientToken];
+                var fileToken = Guid.NewGuid().ToString();
+                var fileIsTransferredMessage = new FileWasTransferredMessage
+                {
+                    FileName = clientSendFilePart.FileName,
+                    FileToken = fileToken,
+                    UserName = name
+                };
+                _TokenFilePath.TryAdd(fileToken, clientSendFilePart.FileName);
+                var packedFileWasTransferred = MessageConverter.PackMessage(fileIsTransferredMessage);
+                await SendDataForEachClient(clientSocket, packedFileWasTransferred);
+                await clientSocket.SendAsync(packedFileWasTransferred, SocketFlags.None);
+                return;
+            }
+            
+            await fileWriter.WriteAsync(data,0,data.Length);
+            var acceptMessage = new ServerSuccessMessage();
+            var packedAnswer = MessageConverter.PackMessage(acceptMessage);
+            await clientSocket.SendAsync(packedAnswer, SocketFlags.None);
+            
         }
 
         private async Task<int?> TryReceiveData(Socket clientSocket, byte[] buffer, EndPoint clientIpEndPoint)
@@ -145,13 +181,7 @@ namespace Os_ChatServer.Services
                 UserName = registerClientMessage.UserName
             };
             var packedJoinedUserMessage = MessageConverter.PackMessage(userJoinedChat);
-            foreach (var connection in _clientsConnections)
-            {
-                if (connection.Value.RemoteEndPoint != tcpSocket.RemoteEndPoint)
-                {
-                    await connection.Value.SendAsync(packedJoinedUserMessage, SocketFlags.None);
-                }
-            }
+            await SendDataForEachClient(tcpSocket, packedJoinedUserMessage);
             
             _clientTokenName.TryAdd(clientToken,registerClientMessage.UserName);
             var users = _clientTokenName.Values.ToArray();
@@ -162,6 +192,17 @@ namespace Os_ChatServer.Services
             };
             var packedMessage = MessageConverter.PackMessage(clientRegisteredMessage);
             await tcpSocket.SendAsync(packedMessage, SocketFlags.None);
+        }
+
+        private async Task SendDataForEachClient(Socket tcpSocket, byte[] packedJoinedUserMessage)
+        {
+            foreach (var connection in _clientsConnections)
+            {
+                if (connection.Value.RemoteEndPoint != tcpSocket.RemoteEndPoint)
+                {
+                    await connection.Value.SendAsync(packedJoinedUserMessage, SocketFlags.None);
+                }
+            }
         }
     }
 }

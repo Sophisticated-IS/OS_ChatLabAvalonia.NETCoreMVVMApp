@@ -9,6 +9,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Models
         public string Message { get; }
         public DateTime Date { get; }
         public bool IsFileMessage { get; }
+        public string FileToken { get; set; }
 
         public ChatMessage([NotNull] string userName, [NotNull] string message, DateTime date, bool isFileMessage)
         {

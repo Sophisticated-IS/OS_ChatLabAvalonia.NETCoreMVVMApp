@@ -99,7 +99,7 @@
         </Grid>
 
         <Grid Grid.Column="1">
-            <Separator Width="10"
+            <Separator Width="5"
                        Background="#B5B8B1" />
         </Grid>
 

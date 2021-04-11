@@ -23,6 +23,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
         private readonly ServerMessagesListener _serverMessagesListener;
         public ReactiveCommand<Unit, Unit> SendTextMessageCommand { get; }
         public ReactiveCommand<Unit, Unit> SendFileCommand { get; }
+        public ReactiveCommand<string, Unit> LoadFileCommand { get; }
         public string ChatMessageText { get; set; }
 
         public ObservableCollection<ChatMessage> ChatMessages { get; set; }
@@ -43,13 +44,28 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             }
 
             UsersInChat = new ObservableCollection<string>(usersInChat);
-            _serverMessagesListener = new ServerMessagesListener(serverEndPoint,userToken);
+            _serverMessagesListener = new ServerMessagesListener(serverEndPoint, userToken);
             SendTextMessageCommand = ReactiveCommand.Create(SendTextMessage);
             SendFileCommand = ReactiveCommand.Create(SendFile);
-
+            LoadFileCommand = ReactiveCommand.Create<string>(LoadFile);
             _serverMessagesListener.NewUserConnectedEvent += ServerMessagesListenerOnNewUserConnectedEvent;
             _serverMessagesListener.TextMessageSentEvent += ServerMessagesListenerOnTextMessageSentEvent;
-            _serverMessagesListener.FileWasSent+= ServerMessagesListenerOnFileWasSent;
+            _serverMessagesListener.FileWasSent += ServerMessagesListenerOnFileWasSent;
+        }
+
+        private async void LoadFile(string fileToken)
+        {
+            var message = ChatMessages.Single(m => m.FileToken == fileToken);
+            if (message.IsFileLoading) return;
+
+            message.IsFileLoading = true;
+            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var fileOpenDlg = new OpenFolderDialog();
+                var res = await fileOpenDlg.ShowAsync(desktop.MainWindow);
+                await _serverMessagesListener.LoadFile(fileToken,res);
+            }
+            message.IsFileLoading = false;
         }
 
         private void ServerMessagesListenerOnFileWasSent(FileWasTransferredMessage fileWasSent)
@@ -67,12 +83,12 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.ViewModels
             };
             if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-              var result =  await chooseFileDialog.ShowAsync(desktop.MainWindow);
-              if (result.Any())
-              {
-                  var file = result.First();
-                  await _serverMessagesListener.SendFile(file);
-              }
+                var result = await chooseFileDialog.ShowAsync(desktop.MainWindow);
+                if (result.Any())
+                {
+                    var file = result.First();
+                     var isFileSend = await _serverMessagesListener.SendFile(file);
+                }
             }
         }
 

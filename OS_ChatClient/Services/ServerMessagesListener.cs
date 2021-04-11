@@ -22,7 +22,8 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
         private int _port;
         private string _ipAddress;
         private bool _isServerAcceptedFilePart;
-
+        private bool _isServerSentWholeFile;
+        private string _fileFolder;
         public delegate void UserConnectedHandler(NewUserConnected newUserConnected);
         public event UserConnectedHandler NewUserConnectedEvent;
 
@@ -103,13 +104,51 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                             _isServerAcceptedFilePart = true;
                             FileWasSent?.Invoke(fileWasTransferredMessage);
                             break;
-                        
-                        
-                    }
+                        case ServerSendFilePartMessage serverSendFilePartMessage:
+                            HandleFilePartMessage(serverSendFilePartMessage);
+                            break;
+                        }
                 }
             }
         }
 
+        private async void HandleFilePartMessage(ServerSendFilePartMessage serverSendFilePartMessage)
+        {
+            if (serverSendFilePartMessage.Data.Length == 0)
+            {
+                _isServerSentWholeFile = true;
+                var newFolder = Path.Combine(_fileFolder, serverSendFilePartMessage.FileName);
+                File.Move(serverSendFilePartMessage.FileName,newFolder);
+            }
+            else
+            {
+                await using var fileWriter = new FileStream(serverSendFilePartMessage.FileName,FileMode.Append);
+                var data = serverSendFilePartMessage.Data;
+                await fileWriter.WriteAsync(data);
+            }
+
+            var answer = new ClientReceivedFilePartMessage();
+            var packedMessage = MessageConverter.PackMessage(answer);
+            await _connection.SendAsync(packedMessage, SocketFlags.None);
+        }
+
+
+        public async Task LoadFile(string fileToken,string fileFolder)
+        {
+            _isServerSentWholeFile = false;
+            _fileFolder = fileFolder;
+            var loadFileRequest = new LoadFileMessage
+            {
+                FileToken = fileToken,
+                ClientToken = _userToken
+            };
+            var packMessage = MessageConverter.PackMessage(loadFileRequest);
+            await _connection.SendAsync(packMessage, SocketFlags.None);
+            while (!_isServerSentWholeFile)
+            {
+                await Task.Delay(300);
+            }
+        }
         private Message? TryUnpackMessage(in byte[] data)
         {
             try
@@ -142,27 +181,26 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
             return Task.FromResult(result);
         }
 
-        public Task<bool> SendFile(string filePath)
+        public async Task<bool> SendFile(string filePath)
         {
-            if (_connection is null) return Task.FromResult(false);
-            if (!File.Exists(filePath)) return Task.FromResult(false);
+            if (_connection is null) return false;
+            if (!File.Exists(filePath)) return false;
 
             var fileName = Path.GetFileName(filePath);
             using var fileReader = new StreamReader(filePath);
             using var binaryReader = new BinaryReader(fileReader.BaseStream);
-
-
+            
             byte[] readBytes;
             do
             {
                 readBytes = binaryReader.ReadBytes(2048);
-                SendFilePartMessage(readBytes, fileName);
+                await SendFilePartMessage(readBytes, fileName);
             } while (readBytes.Length > 0);
             
-            return Task.FromResult(true);      
+            return true;      
         }
 
-        private void SendFilePartMessage(byte[] sendingBytes, string fileName)
+        private async Task SendFilePartMessage(byte[] sendingBytes, string fileName)
         {
             _isServerAcceptedFilePart = false;
             var sendFilePartMessage = new ClientSendFilePartMessage()
@@ -172,7 +210,7 @@ namespace OS_ChatLabAvalonia.NETCoreMVVMApp.Services
                 FileName = fileName
             };
             var packedMessage = MessageConverter.PackMessage(sendFilePartMessage);
-            _connection.Send(packedMessage);
+            _connection.SendAsync(packedMessage,SocketFlags.None);
             while (!_isServerAcceptedFilePart)
             {
                 Thread.Sleep(20);

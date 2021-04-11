@@ -13,14 +13,14 @@
         Foreground="{StaticResource SystemBaseHighColor}"
         IsEnabled="{Binding IsWindowEnabled,Mode=OneWay}"
         x:Name="RootWindow">
-    
+
 
     <!-- <Design.DataContext> -->
     <!--     <viewModels:MainWindowViewModel /> -->
     <!-- </Design.DataContext> -->
 
     <Grid ColumnDefinitions="*,Auto,Auto">
-        
+
         <Grid Grid.Column="0"
               RowDefinitions="*,Auto,Auto">
 
@@ -42,10 +42,12 @@
 
                                 <Button Margin="5,3,0,0"
                                         Content="Load"
-                                        
                                         Command="{Binding ElementName=RootWindow,Path=DataContext.LoadFileCommand}"
-                                        CommandParameter="{Binding Message}"
+                                        CommandParameter="{Binding FileToken}"
                                         IsVisible="{Binding IsFileMessage}" />
+                                <ProgressBar IsIndeterminate="True"
+                                             Foreground="Green"
+                                             IsVisible="{Binding IsFileLoading}" />
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

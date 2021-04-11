@@ -83,6 +83,9 @@ namespace Os_ChatServer.Services
                         case ClientSendFilePartMessage clientSendFilePartMessage:
                             await HandleClientSendFilePartMessage(clientSocket, clientSendFilePartMessage);
                             break;
+                        case LoadFileMessage loadFileMessage :
+                            await HandleLoadFileMessage(clientSocket, loadFileMessage);
+                            break;
                     }
                 }
             }
@@ -134,6 +137,39 @@ namespace Os_ChatServer.Services
             
         }
 
+        
+        private async Task HandleLoadFileMessage(Socket clientSocket, LoadFileMessage loadFileMessage)
+        {
+            var filePath = _TokenFilePath[loadFileMessage.FileToken];
+            await using var fileReader = new FileStream(filePath,FileMode.Open,FileAccess.Read);
+
+            int bytesAmount;
+            do
+            {
+                var buffer = new byte[2048];
+                bytesAmount = fileReader.Read(buffer, 0, buffer.Length);
+                var readBytes = buffer.Take(bytesAmount).ToArray();
+
+                var sendFilePartMessage = new ServerSendFilePartMessage
+                {
+                    Data = readBytes,
+                    FileName = filePath
+                };
+                var packedMessage = MessageConverter.PackMessage(sendFilePartMessage);
+                await clientSocket.SendAsync(packedMessage, SocketFlags.None);
+
+                var tmp = new byte[4096];
+                var res = await clientSocket.ReceiveAsync(tmp, SocketFlags.None);
+                var realBytesReceived = tmp.Take(res).ToArray();
+                var acceptMessage = MessageConverter.UnPackMessage(realBytesReceived);
+                if (acceptMessage is ClientReceivedFilePartMessage clientReceivedFilePartMessage)
+                {
+                    
+                }
+
+
+            } while (bytesAmount > 0);
+        }
         private async Task<int?> TryReceiveData(Socket clientSocket, byte[] buffer, EndPoint clientIpEndPoint)
         {
             try

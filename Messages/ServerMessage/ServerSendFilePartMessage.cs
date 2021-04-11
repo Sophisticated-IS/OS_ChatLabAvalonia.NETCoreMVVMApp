@@ -7,5 +7,8 @@ namespace Messages.ServerMessage
     {
         [ProtoMember(1)]
         public byte[] Data { get; set; }
+
+        [ProtoMember(2)]
+        public string FileName { get; set; }
     }
 }
